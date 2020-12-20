@@ -9,4 +9,4 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "systems/ControlledSystem-impl.h"
 #include "systems/SecondOrderSystem-impl.h"
 
-#include "systems/discretizer/SystemDiscretizer-impl.h"
+//#include "systems/discretizer/SystemDiscretizer-impl.h"

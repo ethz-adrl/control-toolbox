@@ -39,7 +39,7 @@ namespace core {
  * @tparam CONTROL_DIM dimension of input vector
  * @tparam SCALAR scalar type
  */
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
+template <typename MANIFOLD, bool CONT_T>
 class ControlledSystem : public System<MANIFOLD, CONT_T>
 {
 public:
@@ -50,10 +50,12 @@ public:
     typedef typename Base::Time_t Time_t;
 
     using Tangent = typename MANIFOLD::Tangent;
-    typedef typename std::shared_ptr<ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>> Ptr;
+    typedef typename std::shared_ptr<ControlledSystem<MANIFOLD, CONT_T>> Ptr;
 
-    using Controller_t = Controller<MANIFOLD, CONTROL_DIM, CONT_T>;
+    using Controller_t = Controller<MANIFOLD, CONT_T>;
     using control_vector_t = typename Controller_t::control_vector_t;
+
+    ControlledSystem() = delete;
 
     //! default constructor
     /*!
@@ -71,10 +73,8 @@ public:
 
     ControlledSystem(const ControlledSystem& arg);
 
-    virtual ~ControlledSystem();
-
     //! deep copy
-    virtual ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>* clone() const override = 0;
+    virtual ControlledSystem<MANIFOLD, CONT_T>* clone() const override = 0;
 
     //! set a new controller
     /*!

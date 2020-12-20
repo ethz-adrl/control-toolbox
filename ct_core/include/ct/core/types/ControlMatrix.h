@@ -8,16 +8,15 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <int CONTROL_DIM, class SCALAR = double>
-class ControlMatrix : public Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM>
+template <class SCALAR = double>
+class ControlMatrix : public Eigen::Matrix<SCALAR, Dynamic, Dynamic>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    ControlMatrix(){};
-    virtual ~ControlMatrix(){};
-
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, CONTROL_DIM> Base;
+    typedef Eigen::Matrix<SCALAR, Dynamic, Dynamic> Base;
+    ControlMatrix() = default;
+    ControlMatrix(const int d) : Base(d,d) {}
 
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>

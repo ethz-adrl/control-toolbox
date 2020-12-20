@@ -16,7 +16,7 @@ namespace core {
 namespace tpl {
 
 template <typename SCALAR, bool CONT_T>
-class TestNonlinearSystem : public ControlledSystem<EuclideanState<2, SCALAR>, 1, CONT_T>
+class TestSystemFixed : public ControlledSystem<EuclideanState<2, SCALAR>, 1, CONT_T>
 {
 public:
     static const int STATE_DIM = 2;
@@ -28,17 +28,16 @@ public:
     using control_vector_t = typename Base::control_vector_t;
     using state_vector_t = EuclideanState<2, SCALAR>;
 
-    TestNonlinearSystem() = delete;
+    TestSystemFixed() = delete;
 
-    // constructor directly using frequency and damping coefficients
-    TestNonlinearSystem(SCALAR w_n, std::shared_ptr<Controller_t> controller = nullptr)
+    TestSystemFixed(SCALAR w_n, std::shared_ptr<Controller_t> controller = nullptr)
         : Base(controller, SYSTEM_TYPE::GENERAL), w_n_(w_n)
     {
     }
 
-    TestNonlinearSystem(const TestNonlinearSystem& arg) : Base(arg), w_n_(arg.w_n_) {}
-    virtual ~TestNonlinearSystem() {}
-    TestNonlinearSystem* clone() const override { return new TestNonlinearSystem(*this); }
+    TestSystemFixed(const TestSystemFixed& arg) : Base(arg), w_n_(arg.w_n_) {}
+
+    TestSystemFixed* clone() const override { return new TestSystemFixed(*this); }
     void computeControlledDynamics(const state_vector_t& state,
         const Time_t& tn,
         const control_vector_t& control,
@@ -55,7 +54,7 @@ private:
 }  // namespace tpl
 
 template <bool CONT_T>
-using TestNonlinearSystem = tpl::TestNonlinearSystem<double, CONT_T>;
+using TestSystemFixed = tpl::TestSystemFixed<double, CONT_T>;
 
 }  // namespace core
 }  // namespace ct

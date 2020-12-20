@@ -8,53 +8,50 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::ControlledSystem(const SYSTEM_TYPE& type)
+template <typename MANIFOLD, bool CONT_T>
+ControlledSystem<MANIFOLD, CONT_T>::ControlledSystem(const SYSTEM_TYPE& type)
     : System<MANIFOLD, CONT_T>(type), controller_(nullptr)
 {
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::ControlledSystem(std::shared_ptr<Controller_t> controller,
-    const SYSTEM_TYPE& type)
+template <typename MANIFOLD, bool CONT_T>
+ControlledSystem<MANIFOLD, CONT_T>::ControlledSystem(std::shared_ptr<Controller_t> controller, const SYSTEM_TYPE& type)
     : System<MANIFOLD, CONT_T>(type), controller_(controller)
 {
+    controlAction_.resize(controller->GetControlDim());
     controlAction_.setZero();
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::ControlledSystem(const ControlledSystem& arg)
+template <typename MANIFOLD, bool CONT_T>
+ControlledSystem<MANIFOLD, CONT_T>::ControlledSystem(const ControlledSystem& arg)
     : System<MANIFOLD, CONT_T>(arg), controlAction_(arg.controlAction_)
 {
     if (arg.controller_)
         controller_ = std::shared_ptr<Controller_t>(arg.controller_->clone());
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::~ControlledSystem()
-{
-}
-
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-void ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::setController(const std::shared_ptr<Controller_t>& controller)
+template <typename MANIFOLD, bool CONT_T>
+void ControlledSystem<MANIFOLD, CONT_T>::setController(const std::shared_ptr<Controller_t>& controller)
 {
     controller_ = controller;
+    controlAction_.resize(controller->GetControlDim());
+    controlAction_.setZero();
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-void ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::getController(std::shared_ptr<Controller_t>& controller) const
+template <typename MANIFOLD, bool CONT_T>
+void ControlledSystem<MANIFOLD, CONT_T>::getController(std::shared_ptr<Controller_t>& controller) const
 {
     controller = controller_;
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-auto ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::getController() -> std::shared_ptr<Controller_t>
+template <typename MANIFOLD, bool CONT_T>
+auto ControlledSystem<MANIFOLD, CONT_T>::getController() -> std::shared_ptr<Controller_t>
 {
     return controller_;
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-void ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::computeDynamics(const MANIFOLD& m,
+template <typename MANIFOLD, bool CONT_T>
+void ControlledSystem<MANIFOLD, CONT_T>::computeDynamics(const MANIFOLD& m,
     const Time_t& t,
     typename MANIFOLD::Tangent& derivative)
 {
@@ -66,8 +63,8 @@ void ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::computeDynamics(const MANI
     computeControlledDynamics(m, t, controlAction_, derivative);
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-auto ControlledSystem<MANIFOLD, CONTROL_DIM, CONT_T>::getLastControlAction() const -> control_vector_t
+template <typename MANIFOLD, bool CONT_T>
+auto ControlledSystem<MANIFOLD, CONT_T>::getLastControlAction() const -> control_vector_t
 {
     return controlAction_;
 }

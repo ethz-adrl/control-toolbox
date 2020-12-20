@@ -41,12 +41,15 @@ public:
     const Base& toImplementation() const { return *this; }
 };
 
-// todo do not move to implementation file
+// NOTE: do not move to implementation file
 template <template <class> class MANIF_T, template <class> class TAN, typename SCALAR>
 template <typename OTHER>
 ManifoldState<MANIF_T, TAN, SCALAR>::ManifoldState(const OTHER& other) : Base(other)
 {
 }
+
+using SE2d = ManifoldState<manif::SE2, manif::SE2Tangent, double>;
+// todo: include other typedefs here.
 
 } /* namespace core */
 } /* namespace ct */

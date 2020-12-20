@@ -58,14 +58,14 @@ namespace tpl {
  * \todo rename to damped oscillator
  */
 template <typename SCALAR>
-class SecondOrderSystem : public ControlledSystem<EuclideanState<2, SCALAR>, 1, CONTINUOUS_TIME>
+class SecondOrderSystem : public ControlledSystem<EuclideanState<2, SCALAR>, CONTINUOUS_TIME>
 {
 public:
     static const size_t STATE_DIM = 2;    //!< state dimension (position, velocity)
     static const size_t CONTROL_DIM = 1;  //!< control dimension (force)
 
     using StateVector_t = EuclideanState<STATE_DIM>;
-    using Base = ControlledSystem<EuclideanState<2, SCALAR>, 1, CONTINUOUS_TIME>;
+    using Base = ControlledSystem<EuclideanState<2, SCALAR>, CONTINUOUS_TIME>;
     using Controller_t = typename Base::Controller_t;
     using Time_t = typename Base::Time_t;
 
@@ -121,7 +121,7 @@ public:
 	 */
     virtual void computeControlledDynamics(const StateVector_t& state,
         const Time_t& t,
-        const ControlVector<1, SCALAR>& control,
+        const ControlVector<SCALAR>& control,
         typename StateVector_t::Tangent& derivative) override;
 
     //! check the parameters

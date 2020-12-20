@@ -57,7 +57,7 @@ void SecondOrderSystem<SCALAR>::setDynamics(SCALAR w_n, SCALAR zeta, SCALAR g_dc
 template <typename SCALAR>
 void SecondOrderSystem<SCALAR>::computeControlledDynamics(const StateVector_t& state,
     const Time_t& t,
-    const ControlVector<1, SCALAR>& control,
+    const ControlVector<SCALAR>& control,
     typename StateVector_t::Tangent& derivative)
 {
     derivative(0) = state(1);

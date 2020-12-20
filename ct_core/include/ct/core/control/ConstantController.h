@@ -17,14 +17,14 @@ namespace core {
  * This class is useful to integrate a ControlledSystem forward subject to a
  * constant control input.
  */
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-class ConstantController : public Controller<MANIFOLD, CONTROL_DIM, CONT_T>
+template <typename MANIFOLD, bool CONT_T>
+class ConstantController : public Controller<MANIFOLD, CONT_T>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using SCALAR = typename MANIFOLD::Scalar;
-    using Base = Controller<MANIFOLD, CONTROL_DIM, CONT_T>;
+    using Base = Controller<MANIFOLD, CONT_T>;
     using Time_t = typename Base::Time_t;
     using control_vector_t = typename Base::control_vector_t;
 
@@ -32,7 +32,8 @@ public:
     /*!
      * Sets the control signal to zero
      */
-    ConstantController();
+    ConstantController() = delete;
+    ConstantController(const int d) : u_(d), derivative_u0_(d) { derivative_u0_.setIdentity(); }
 
     //! Constructor
     /*!
@@ -42,17 +43,16 @@ public:
     ConstantController(control_vector_t& u);
 
     //! Copy constructor
-    ConstantController(const ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>& other);
-
-    //! Destructor
-    virtual ~ConstantController() = default;
+    ConstantController(const ConstantController<MANIFOLD, CONT_T>& other);
 
     //! Clone operator
     /*!
      * Clones the controller. Used for cloning ControlledSystem's
      * @return pointer to cloned controller
      */
-    ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>* clone() const override;
+    ConstantController<MANIFOLD, CONT_T>* clone() const override;
+
+    int GetControlDim() const override { return u_.size(); }
 
     //! Computes current control
     /*!
@@ -78,10 +78,11 @@ public:
      */
     const control_vector_t& getControl() const;
 
-    virtual ControlMatrix<CONTROL_DIM, SCALAR> getDerivativeU0(const MANIFOLD& state, const Time_t tn) override;
+    virtual ControlMatrix<SCALAR> getDerivativeU0(const MANIFOLD& state, const Time_t tn) override;
 
 private:
     control_vector_t u_;
+    ControlMatrix<SCALAR> derivative_u0_;
 };
 
 

@@ -26,9 +26,9 @@ public:
     using SCALAR = typename MANIFOLD::Scalar;
 
     using ManifoldArray_t = DiscreteArray<MANIFOLD>;
-    using ControlVectorArray_t = ControlVectorArray<CONTROL_DIM, SCALAR>;
+    using ControlVectorArray_t = ControlVectorArray<SCALAR>;
     using TimeArray_t = tpl::TimeArray<SCALAR>;
-    using ControlledSystem_t = ControlledSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>;
+    using ControlledSystem_t = ControlledSystem<MANIFOLD, CONTINUOUS_TIME>;
 
     SubstepRecorder(std::shared_ptr<ControlledSystem_t> system = nullptr,
         bool activated = true,
@@ -56,7 +56,7 @@ public:
 
     const std::shared_ptr<ManifoldArray_t>& getSubstates() const;
 
-    const std::shared_ptr<ControlVectorArray<CONTROL_DIM, SCALAR>>& getSubcontrols() const;
+    const std::shared_ptr<ControlVectorArray<SCALAR>>& getSubcontrols() const;
 
 private:
     bool activated_;

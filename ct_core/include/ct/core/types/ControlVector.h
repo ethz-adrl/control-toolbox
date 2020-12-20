@@ -11,19 +11,16 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <int CONTROL_DIM, class SCALAR = double>
-class ControlVector : public Eigen::Matrix<SCALAR, CONTROL_DIM, 1>
+template <class SCALAR = double>
+class ControlVector : public Eigen::Matrix<SCALAR, Dynamic, 1>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    static const int DIM = CONTROL_DIM;
+    typedef Eigen::Matrix<SCALAR, Dynamic, 1> Base;
 
-    typedef Eigen::Matrix<SCALAR, CONTROL_DIM, 1> Base;
-
-    ControlVector(){};
-    ControlVector(const int d): Base(d){};
-    virtual ~ControlVector(){};
+    ControlVector() = default;
+    ControlVector(const int d) : Base(d){};
 
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
@@ -45,11 +42,7 @@ public:
     const Base& toImplementation() const { return *this; }
 };
 
-
-template <class SCALAR = double>
-using ControlVectorXs = ControlVector<Dynamic, SCALAR>;
-
-using ControlVectorXd = ControlVectorXs<double>;
+using ControlVectord = ControlVector<double>;
 
 } /* namespace core */
 } /* namespace ct */

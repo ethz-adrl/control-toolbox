@@ -19,21 +19,20 @@ namespace core {
  * ControlledSystem. Any custom controller should derive from this class
  * to ensure it is compatible with ControlledSystem and the Integrator.
  */
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
+template <typename MANIFOLD, bool CONT_T>
 class Controller
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using SCALAR = typename MANIFOLD::Scalar;
-    using control_vector_t = ControlVector<CONTROL_DIM, SCALAR>;
-    using control_matrix_t = ControlMatrix<CONTROL_DIM, SCALAR>;
+    using control_vector_t = ControlVector<SCALAR>;
+    using control_matrix_t = ControlMatrix<SCALAR>;
 
     // determin Time_t to be either scalar or int
     using Time_t = typename std::conditional_t<CONT_T, SCALAR, int>;
 
     Controller() = default;
-    virtual ~Controller() = default;
 
     //! Copy constructor
     Controller(const Controller& other){};
@@ -43,6 +42,9 @@ public:
 	 * Has to be implemented by any custom controller.
 	 */
     virtual Controller* clone() const = 0;
+
+    // Return the controller dimensionality.
+    virtual int GetControlDim() const = 0;
 
     //! Compute control signal
     /*!

@@ -59,8 +59,8 @@ template <typename MANIFOLD, size_t CONTROL_DIM>
 void SubstepRecorder<MANIFOLD, CONTROL_DIM>::reset()
 {
     states_ = std::shared_ptr<ManifoldArray_t>(new ManifoldArray_t());
-    controls_ = std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>>(
-        new ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>);
+    controls_ = std::shared_ptr<ct::core::ControlVectorArray<SCALAR>>(
+        new ct::core::ControlVectorArray<SCALAR>);
     times_ = std::shared_ptr<ct::core::tpl::TimeArray<SCALAR>>(new ct::core::tpl::TimeArray<SCALAR>);
 }
 
@@ -72,7 +72,7 @@ auto SubstepRecorder<MANIFOLD, CONTROL_DIM>::getSubstates() const -> const std::
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto SubstepRecorder<MANIFOLD, CONTROL_DIM>::getSubcontrols() const
-    -> const std::shared_ptr<ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>>&
+    -> const std::shared_ptr<ct::core::ControlVectorArray<SCALAR>>&
 {
     return controls_;
 }

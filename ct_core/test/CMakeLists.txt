@@ -11,11 +11,15 @@ endmacro()
 if(BUILD_TESTS)
     package_add_test(StateManifoldTest StateManifoldTest.cpp)
 
-    add_library(TestNonlinearSystemDynamic system/TestNonlinearSystemDynamic.cpp)
-    target_link_libraries(TestNonlinearSystemDynamic ct_core)
+    add_library(TestSystemDynamic system/TestSystemDynamic.cpp)
+    target_link_libraries(TestSystemDynamic ct_core)
 
     add_executable(TestNonlinearSystemDynamic_test system/TestNonlinearSystemDynamic_test.cpp)
-    target_link_libraries(TestNonlinearSystemDynamic_test TestNonlinearSystemDynamic ct_core)
+    target_link_libraries(TestNonlinearSystemDynamic_test TestSystemDynamic ct_core)
+
+    add_executable(ManifoldSystem_test system/ManifoldSystem_test.cpp)
+    target_link_libraries(ManifoldSystem_test ct_core)
+
 
     #package_add_test(NoiseTest NoiseTest.cpp)
     #package_add_test(controlledSystemTest system/ControlledSystemTest.cpp)

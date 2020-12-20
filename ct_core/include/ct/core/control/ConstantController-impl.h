@@ -8,56 +8,47 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::ConstantController()
+template <typename MANIFOLD, bool CONT_T>
+ConstantController<MANIFOLD, CONT_T>::ConstantController(control_vector_t& u) : Base(), u_(u), derivative_u0_(u.size())
 {
-    u_.setZero();
+    derivative_u0_.setIdentity();
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::ConstantController(control_vector_t& u) : Base(), u_(u)
-{
-}
-
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::ConstantController(const ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>& other)
-    : Base(other), u_(other.u_)
+template <typename MANIFOLD, bool CONT_T>
+ConstantController<MANIFOLD, CONT_T>::ConstantController(const ConstantController<MANIFOLD, CONT_T>& other)
+    : Base(other), u_(other.u_), derivative_u0_(other.derivative_u0_)
 {
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>* ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::clone() const
+template <typename MANIFOLD, bool CONT_T>
+ConstantController<MANIFOLD, CONT_T>* ConstantController<MANIFOLD, CONT_T>::clone() const
 {
-    return new ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>(*this);
+    return new ConstantController<MANIFOLD, CONT_T>(*this);
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-void ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::computeControl(const MANIFOLD& state,
-    const Time_t& tn,
-    control_vector_t& u)
+template <typename MANIFOLD, bool CONT_T>
+void ConstantController<MANIFOLD, CONT_T>::computeControl(const MANIFOLD& state, const Time_t& tn, control_vector_t& u)
 {
     u = u_;
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-void ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::setControl(const control_vector_t& u)
+template <typename MANIFOLD, bool CONT_T>
+void ConstantController<MANIFOLD, CONT_T>::setControl(const control_vector_t& u)
 {
     u_ = u;
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-auto ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::getControl() const -> const control_vector_t& 
+template <typename MANIFOLD, bool CONT_T>
+auto ConstantController<MANIFOLD, CONT_T>::getControl() const -> const control_vector_t&
 {
     return u_;
 }
 
-template <typename MANIFOLD, int CONTROL_DIM, bool CONT_T>
-auto ConstantController<MANIFOLD, CONTROL_DIM, CONT_T>::getDerivativeU0(const MANIFOLD& state,
-    const Time_t tn) -> ControlMatrix<CONTROL_DIM, SCALAR> 
+template <typename MANIFOLD, bool CONT_T>
+auto ConstantController<MANIFOLD, CONT_T>::getDerivativeU0(const MANIFOLD& state, const Time_t tn)
+    -> ControlMatrix<SCALAR>
 {
-    throw std::runtime_error("getDerivativeU0 not implemented for ConstantController.");
-    //return ControlMatrix<CONTROL_DIM, SCALAR>::Identity();
-    return ControlMatrix<CONTROL_DIM, SCALAR>();
+    return derivative_u0_;
 }
 }  // namespace core
 }  // namespace ct

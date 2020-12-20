@@ -8,19 +8,19 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "systems/System.h"
 #include "systems/ControlledSystem.h"
 #include "systems/SecondOrderSystem.h"
-#include "systems/SymplecticSystem.h"
-#include "systems/LinearSystem.h"
-#include "systems/LTISystem.h"
-#include "systems/SwitchedControlledSystem.h"
-#include "systems/SwitchedLinearSystem.h"
-
-#include "systems/linearizer/DynamicsLinearizerNumDiff.h"
-#include "systems/linearizer/SystemLinearizer.h"
-#ifdef CPPADCG
-  #include "systems/linearizer/DynamicsLinearizerAD.h"
-  #include "systems/linearizer/AutoDiffLinearizer.h"
-  #include "systems/linearizer/DynamicsLinearizerADCG.h"
-  #include "systems/linearizer/ADCodegenLinearizer.h"
-#endif
-
-#include "systems/discretizer/SystemDiscretizer.h"
+//#include "systems/SymplecticSystem.h"
+//#include "systems/LinearSystem.h"
+//#include "systems/LTISystem.h"
+//#include "systems/SwitchedControlledSystem.h"
+//#include "systems/SwitchedLinearSystem.h"
+//
+//#include "systems/linearizer/DynamicsLinearizerNumDiff.h"
+//#include "systems/linearizer/SystemLinearizer.h"
+//#ifdef CPPADCG
+//  #include "systems/linearizer/DynamicsLinearizerAD.h"
+//  #include "systems/linearizer/AutoDiffLinearizer.h"
+//  #include "systems/linearizer/DynamicsLinearizerADCG.h"
+//  #include "systems/linearizer/ADCodegenLinearizer.h"
+//#endif
+//
+//#include "systems/discretizer/SystemDiscretizer.h"
