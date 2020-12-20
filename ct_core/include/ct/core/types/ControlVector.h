@@ -6,6 +6,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <Eigen/Dense>
+#include "Constants.h"
 
 namespace ct {
 namespace core {
@@ -46,7 +47,7 @@ public:
 
 
 template <class SCALAR = double>
-using ControlVectorXs = ControlVector<-1, SCALAR>;
+using ControlVectorXs = ControlVector<Dynamic, SCALAR>;
 
 using ControlVectorXd = ControlVectorXs<double>;
 

@@ -16,7 +16,7 @@ void RunRandomSystem(const int state_dim, const int control_dim){
     EuclideanStateXd x;
     x.resize(state_dim);
     x.setConstant(1.0);
-    ControlVector<-1> u;
+    ControlVector<Dynamic> u;
     u.resize(control_dim);
     u.setConstant(1.0);
 

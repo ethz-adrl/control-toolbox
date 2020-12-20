@@ -18,10 +18,11 @@ enum SYSTEM_TYPE
     SECOND_ORDER  //!< a pure second-order system
 };
 
+//TODO: replace this by a simple constant definition?
 enum TIME_TYPE : bool
 {
-    CONTINUOUS_TIME = true,
-    DISCRETE_TIME = false
+    CONTINUOUS_TIME = ct::core::ContinuousTime,
+    DISCRETE_TIME = ct::core::DiscreteTime
 };
 
 //! Interface class for a general system described by an ordinary differential equation (ODE)
@@ -107,6 +108,7 @@ protected:
     SYSTEM_TYPE type_;  //!< type of system
 };
 
+// TODO: all of this should not be necessary, we can just add mlog() and mexp() methods as default to all manifold/euclidean types.
 /**
  * Implementations of default specializations above. 
  * \warning: do not move to *-impl.h file!

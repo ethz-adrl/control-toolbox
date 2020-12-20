@@ -7,6 +7,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #include <Eigen/Dense>
 #include "lt/optional.hpp"
+#include "Constants.h"
 
 
 namespace ct {
@@ -79,7 +80,7 @@ template <int DIM, class SCALAR = double>
 using StateVector = EuclideanState<DIM, SCALAR>;  // for legacy, TODO: remove at some point
 
 template <class SCALAR = double>
-using EuclideanStateXs = EuclideanState<-1, SCALAR>;
+using EuclideanStateXs = EuclideanState<Dynamic, SCALAR>;
 
 using EuclideanStateXd = EuclideanStateXs<double>;
 
