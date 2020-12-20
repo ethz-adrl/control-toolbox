@@ -106,6 +106,7 @@ public:
         return c;
     }
 
+    const Scalar* data() const { return coeffs().data(); }
     auto transpose() const { return coeffs().transpose(); }
     const POS_TANGENT& pos() const { return t_pos_; }
     void set_pos(const POS_TANGENT& p) { t_pos_ = p; }
@@ -261,6 +262,7 @@ public:
             (*Jr).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJr;
         }
 
+        // Das was ich hier als Jacobian verkaufe, was ist das eigentlich?
         return t;
     }
 
@@ -268,7 +270,7 @@ public:
     Tangent log(OptJacobianRef J_t_m = {}) const
     {
         if (J_t_m)
-            throw std::runtime_error("J_t_m compuation not defined.");
+            throw std::runtime_error("J_t_m computation not defined.");
 
         return rminus(CompositeManifold::Identity(), J_t_m);
     }
@@ -278,6 +280,8 @@ public:
         Jacobian J = Jacobian::Zero();
         J.template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = m_pos_.adj();
         J.template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = m_pos_.adj();
+
+// die adjoint hier ist eine reine rotation
         return J;
     }
 
@@ -367,8 +371,8 @@ int main(int argc, char** argv)
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati gnSolver
     std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> gnSolver(
         new GNRiccatiSolver<ManifoldState_t, control_dim>);
-    std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> hpipmSolver(
-        new HPIPMInterface<ManifoldState_t, control_dim>);
+    // std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> hpipmSolver(
+    //     new HPIPMInterface<ManifoldState_t, control_dim>);
 
     // create linear-quadratic optimal control problem containers
     std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>> problem(
@@ -442,24 +446,24 @@ int main(int argc, char** argv)
         // set the problem pointers
         gnSolver->setProblem(problem);
 
-        std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>> hpipmProblem (problem->clone());
-        hpipmSolver->setProblem(hpipmProblem);
+        // std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>> hpipmProblem (problem->clone());
+        // hpipmSolver->setProblem(hpipmProblem);
 
         // allocate memory (if required)
         gnSolver->initializeAndAllocate();
-        hpipmSolver->initializeAndAllocate();
+        // hpipmSolver->initializeAndAllocate();
 
         // solve the problem
         gnSolver->solve();
-        hpipmSolver->solve();
+        // hpipmSolver->solve();
 
         // postprocess data
         gnSolver->compute_lv();
         gnSolver->computeFeedbackMatrices();
         gnSolver->computeStatesAndControls();
-        hpipmSolver->compute_lv();
-        hpipmSolver->computeFeedbackMatrices();
-        hpipmSolver->computeStatesAndControls();
+        // hpipmSolver->compute_lv();
+        // hpipmSolver->computeFeedbackMatrices();
+        // hpipmSolver->computeStatesAndControls();
 
         // retrieve solutions from solver
         auto xSol_gn = gnSolver->getSolutionState();
@@ -467,10 +471,10 @@ int main(int argc, char** argv)
         ct::core::FeedbackArray<state_dim, control_dim> KSol_gn = gnSolver->getSolutionFeedback();
         ct::core::ControlVectorArray<control_dim> lv_sol_gn = gnSolver->get_lv();
 
-        auto xSol_hpipm = hpipmSolver->getSolutionState();
-        auto uSol_hpipm = hpipmSolver->getSolutionControl();
-        ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = hpipmSolver->getSolutionFeedback();
-        ct::core::ControlVectorArray<control_dim> lv_sol_hpipm = hpipmSolver->get_lv();
+        // auto xSol_hpipm = hpipmSolver->getSolutionState();
+        // auto uSol_hpipm = hpipmSolver->getSolutionControl();
+        // ct::core::FeedbackArray<state_dim, control_dim> KSol_hpipm = hpipmSolver->getSolutionFeedback();
+        // ct::core::ControlVectorArray<control_dim> lv_sol_hpipm = hpipmSolver->get_lv();
 
         // TODO: include a comparison here.
 

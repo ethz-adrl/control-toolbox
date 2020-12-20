@@ -157,7 +157,7 @@ target_link_libraries(ct_core INTERFACE
     dl # required for gcc compatibility
     )
 
-
+    
 ##################
 # BUILD EXAMPLES #
 ##################

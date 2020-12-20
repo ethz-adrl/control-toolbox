@@ -6,6 +6,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <Eigen/Dense>
+#include "lt/optional.hpp"
+
 
 namespace ct {
 namespace core {
@@ -53,6 +55,23 @@ public:
 
     Tangent rminus(const EuclideanState& x) const { return *this - x; }
     EuclideanState rplus(const Tangent& x) const { return *this + x; }
+
+    using OptJacobianRef = tl::optional<Eigen::Ref<Eigen::Matrix<SCALAR, DIM, DIM>>>;
+    Tangent rminus(const EuclideanState& m, OptJacobianRef J_t_ma, OptJacobianRef J_t_mb) const
+    {
+        const Tangent t = rminus(m);
+
+        if (J_t_ma)
+        {
+            (*J_t_ma).setIdentity();
+        }
+        if (J_t_mb)
+        {
+            (*J_t_mb).setIdentity();
+        }
+
+        return t;
+    }
 };
 
 
