@@ -20,7 +20,7 @@ public:
     typedef Eigen::Matrix<SCALAR, Dynamic, 1> Base;
 
     ControlVector() = default;
-    ControlVector(const int d) : Base(d){};
+    ControlVector(const int d) : Base(d, 1){};
 
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
@@ -36,9 +36,7 @@ public:
         return *this;
     }
 
-    //! get underlying Eigen type
     Base& toImplementation() { return *this; }
-    //! get const underlying Eigen type
     const Base& toImplementation() const { return *this; }
 };
 

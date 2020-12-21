@@ -23,17 +23,17 @@ System<MANIFOLD, CONT_T>::System(const System& other) : type_(other.type_)
 {
 }
 
-template <typename MANIFOLD, bool CONT_T>
-typename MANIFOLD::Tangent System<MANIFOLD, CONT_T>::lift(const MANIFOLD& m)
-{
-    return lift_specialized(m);
-}
+// template <typename MANIFOLD, bool CONT_T>
+// typename MANIFOLD::Tangent System<MANIFOLD, CONT_T>::lift(const MANIFOLD& m)
+// {
+//     return lift_specialized(m);
+// }
 
-template <typename MANIFOLD, bool CONT_T>
-MANIFOLD System<MANIFOLD, CONT_T>::retract(const typename MANIFOLD::Tangent& t)
-{
-    return retract_specialized(t);
-}
+// template <typename MANIFOLD, bool CONT_T>
+// MANIFOLD System<MANIFOLD, CONT_T>::retract(const typename MANIFOLD::Tangent& t)
+// {
+//     return retract_specialized(t);
+// }
 
 template <typename MANIFOLD, bool CONT_T>
 System<MANIFOLD, CONT_T>* System<MANIFOLD, CONT_T>::clone() const

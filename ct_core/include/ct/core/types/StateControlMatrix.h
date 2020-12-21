@@ -5,19 +5,21 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 
 #pragma once
 
+#include "Constants.h"
+
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, class SCALAR = double>
-class StateControlMatrix : public Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM>
+template <int STATE_DIM, class SCALAR = double>
+class StateControlMatrix : public Eigen::Matrix<SCALAR, STATE_DIM, Dynamic>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    typedef Eigen::Matrix<SCALAR, STATE_DIM, CONTROL_DIM> Base;
+    typedef Eigen::Matrix<SCALAR, STATE_DIM, Dynamic> Base;
 
-    StateControlMatrix() {}
-    virtual ~StateControlMatrix() {}
+    StateControlMatrix() = default;
+
     //! This constructor allows you to construct MyVectorType from Eigen expressions
     template <typename OtherDerived>
     StateControlMatrix(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
@@ -36,8 +38,35 @@ public:
     const Base& toImplementation() const { return *this; }
 };
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, class SCALAR = double>
-using ControlStateMatrix = StateControlMatrix<CONTROL_DIM, STATE_DIM, SCALAR>;
+
+template <int STATE_DIM, class SCALAR = double>
+class ControlStateMatrix : public Eigen::Matrix<SCALAR, Dynamic, STATE_DIM>
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    typedef Eigen::Matrix<SCALAR, Dynamic, STATE_DIM> Base;
+
+    ControlStateMatrix() = default;
+
+    //! This constructor allows you to construct MyVectorType from Eigen expressions
+    template <typename OtherDerived>
+    ControlStateMatrix(const Eigen::MatrixBase<OtherDerived>& other) : Base(other)
+    {
+    }
+    //! This method allows you to assign Eigen expressions to MyVectorType
+    template <typename OtherDerived>
+    ControlStateMatrix& operator=(const Eigen::MatrixBase<OtherDerived>& other)
+    {
+        this->Base::operator=(other);
+        return *this;
+    }
+    //! get underlying Eigen type
+    Base& toImplementation() { return *this; }
+    //! get const underlying Eigen type
+    const Base& toImplementation() const { return *this; }
+};
+
 
 } /* namespace core */
 } /* namespace ct */

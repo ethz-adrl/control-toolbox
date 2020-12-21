@@ -23,7 +23,7 @@ if(BUILD_TESTS)
 
     #package_add_test(NoiseTest NoiseTest.cpp)
     #package_add_test(controlledSystemTest system/ControlledSystemTest.cpp)
-    #package_add_test(LTISystemTest system/LTISystemTest.cpp)
+    package_add_test(LTISystemTest system/LTISystemTest.cpp)
     #package_add_test(systemLinearizerTest system/SystemLinearizerTest.cpp)
     #package_add_test(SecondOrderSystemTest system/SecondOrderSystemTest.cpp)
     #package_add_test(IntegrationTest integration/IntegrationTest.cpp)

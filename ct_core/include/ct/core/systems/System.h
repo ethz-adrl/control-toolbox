@@ -81,10 +81,10 @@ public:
     virtual void computeDynamics(const MANIFOLD& m, const Time_t& tn, TANGENT& t) = 0;
 
     //! lift a manifold element to tangent space, default implementation is log w.r.t. epsilon
-    virtual TANGENT lift(const MANIFOLD& m);
+    //virtual TANGENT lift(const MANIFOLD& m);
 
-    //! retract a tangent vector to the corresponding group element, default implementation is w.r.t. epsilon
-    virtual MANIFOLD retract(const TANGENT& t);
+    // //! retract a tangent vector to the corresponding group element, default implementation is w.r.t. epsilon
+    // virtual MANIFOLD retract(const TANGENT& t);
 
     //! get the type of system
     /*!
@@ -92,17 +92,17 @@ public:
 	 */
     SYSTEM_TYPE getType() const;
     // default lift specialization for euclidean case
-    template <typename T = TANGENT>
-    typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type lift_specialized(const MANIFOLD& m);
-    // default lift specialization for manifold-case
-    template <typename T = TANGENT>
-    typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type lift_specialized(const MANIFOLD& m);
-    // default retract specialization for euclidean case
-    template <typename T = MANIFOLD>
-    typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type retract_specialized(const TANGENT& t);
-    // default retract specialization for manifold case
-    template <typename T = MANIFOLD>
-    typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type retract_specialized(const TANGENT& t);
+    // template <typename T = TANGENT>
+    // typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type lift_specialized(const MANIFOLD& m);
+    // // default lift specialization for manifold-case
+    // template <typename T = TANGENT>
+    // typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type lift_specialized(const MANIFOLD& m);
+    // // default retract specialization for euclidean case
+    // template <typename T = MANIFOLD>
+    // typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type retract_specialized(const TANGENT& t);
+    // // default retract specialization for manifold case
+    // template <typename T = MANIFOLD>
+    // typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type retract_specialized(const TANGENT& t);
 
 protected:
     SYSTEM_TYPE type_;  //!< type of system
@@ -113,34 +113,34 @@ protected:
  * Implementations of default specializations above. 
  * \warning: do not move to *-impl.h file!
  */
-template <typename MANIFOLD, bool CONT_T>
-template <typename T>
-typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type System<MANIFOLD, CONT_T>::lift_specialized(
-    const MANIFOLD& m)
-{
-    return m;
-}
-template <typename MANIFOLD, bool CONT_T>
-template <typename T>
-typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type System<MANIFOLD, CONT_T>::lift_specialized(
-    const MANIFOLD& m)
-{
-    return m.log();
-}
-template <typename MANIFOLD, bool CONT_T>
-template <typename T>
-typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type System<MANIFOLD, CONT_T>::retract_specialized(
-    const TANGENT& t)
-{
-    return t;
-}
-template <typename MANIFOLD, bool CONT_T>
-template <typename T>
-typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type System<MANIFOLD, CONT_T>::retract_specialized(
-    const TANGENT& t)
-{
-    return t.exp();
-}
+// template <typename MANIFOLD, bool CONT_T>
+// template <typename T>
+// typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type System<MANIFOLD, CONT_T>::lift_specialized(
+//     const MANIFOLD& m)
+// {
+//     return m;
+// }
+// template <typename MANIFOLD, bool CONT_T>
+// template <typename T>
+// typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type System<MANIFOLD, CONT_T>::lift_specialized(
+//     const MANIFOLD& m)
+// {
+//     return m.log();
+// }
+// template <typename MANIFOLD, bool CONT_T>
+// template <typename T>
+// typename std::enable_if<is_euclidean<MANIFOLD>::value, T>::type System<MANIFOLD, CONT_T>::retract_specialized(
+//     const TANGENT& t)
+// {
+//     return t;
+// }
+// template <typename MANIFOLD, bool CONT_T>
+// template <typename T>
+// typename std::enable_if<!(is_euclidean<MANIFOLD>::value), T>::type System<MANIFOLD, CONT_T>::retract_specialized(
+//     const TANGENT& t)
+// {
+//     return t.exp();
+// }
 
 }  // namespace core
 }  // namespace ct

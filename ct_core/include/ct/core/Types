@@ -23,15 +23,15 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include "types/StateControlMatrix.h"
 #include "types/OutputStateMatrix.h"
 
-//#include "types/arrays/ScalarArray.h"
-//#include "types/arrays/TimeArray.h"
-//#include "types/arrays/MatrixArrays.h"
-//#include "types/arrays/ManifArrays.h"
-//#include "types/arrays/ArrayHelpers.h"
-//
-//#include "types/trajectories/DiscreteTrajectory.h"
-//#include "types/trajectories/ScalarTrajectory.h"
-//#include "types/trajectories/MatrixTrajectories.h"
+#include "types/arrays/ScalarArray.h"
+#include "types/arrays/TimeArray.h"
+#include "types/arrays/MatrixArrays.h"
+#include "types/arrays/ManifArrays.h"
+#include "types/arrays/ArrayHelpers.h"
+
+#include "types/trajectories/DiscreteTrajectory.h"
+#include "types/trajectories/ScalarTrajectory.h"
+#include "types/trajectories/MatrixTrajectories.h"
 
 #include "types/TypeTraits.h"
 #include "types/TypeMacros.h"

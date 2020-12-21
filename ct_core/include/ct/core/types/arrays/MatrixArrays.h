@@ -19,10 +19,10 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 namespace ct {
 namespace core {
 
-template <size_t STATE_DIM, typename SCALAR = double>
+template <int STATE_DIM, typename SCALAR = double>
 using EuclideanStateArray = DiscreteArray<EuclideanState<STATE_DIM, SCALAR>>;
 
-template <size_t STATE_DIM, typename SCALAR = double>
+template <int STATE_DIM, typename SCALAR = double>
 using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR>>;
 
 template <typename SCALAR = double>
@@ -31,8 +31,11 @@ using ControlMatrixArray = DiscreteArray<ControlMatrix<SCALAR>>;
 template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
 using FeedbackArray = DiscreteArray<FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
 
-template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
-using StateControlMatrixArray = DiscreteArray<StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>>;
+template <int STATE_DIM, typename SCALAR = double>
+using StateControlMatrixArray = DiscreteArray<StateControlMatrix<STATE_DIM, SCALAR>>;
+
+template <int STATE_DIM, typename SCALAR = double>
+using ControlStateMatrixArray = DiscreteArray<ControlStateMatrix<STATE_DIM, SCALAR>>;
 
 template <size_t STATE_DIM, typename SCALAR = double>
 using StateMatrixArray = DiscreteArray<StateMatrix<STATE_DIM, SCALAR>>;

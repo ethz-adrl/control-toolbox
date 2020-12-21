@@ -125,8 +125,6 @@ public:
     {
     }
 
-    //! destructor
-    virtual ~SystemLinearizer() {}
     //! deep cloning
     SystemLinearizer<MANIFOLD, CONTROL_DIM, CONT_T>* clone() const override
     {

@@ -46,12 +46,12 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using Base = System<MANIFOLD, CONT_T>;
-    using SCALAR = typename MANIFOLD::Scalar;
     typedef typename Base::Time_t Time_t;
 
+    using SCALAR = typename MANIFOLD::Scalar;
     using Tangent = typename MANIFOLD::Tangent;
+    
     typedef typename std::shared_ptr<ControlledSystem<MANIFOLD, CONT_T>> Ptr;
-
     using Controller_t = Controller<MANIFOLD, CONT_T>;
     using control_vector_t = typename Controller_t::control_vector_t;
 
@@ -61,7 +61,7 @@ public:
     /*!
 	 * @param type system type
 	 */
-    ControlledSystem(const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL);
+    ControlledSystem(const int control_dim, const SYSTEM_TYPE& type = SYSTEM_TYPE::GENERAL);
 
     //! constructor
     /*!
@@ -120,8 +120,8 @@ public:
 protected:
     std::shared_ptr<Controller_t> controller_;  //!< the controller instance
 
-    control_vector_t
-        controlAction_;  // TODO: it would be nice to get rid of this, in order to avoid all the dynamic resizing and so on
+    control_vector_t controlAction_;
+    // TODO: need to make sure that memory alloc only happens at init time.
 };
 
 }  // namespace core

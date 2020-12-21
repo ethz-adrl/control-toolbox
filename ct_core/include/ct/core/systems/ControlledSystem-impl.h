@@ -9,9 +9,10 @@ namespace ct {
 namespace core {
 
 template <typename MANIFOLD, bool CONT_T>
-ControlledSystem<MANIFOLD, CONT_T>::ControlledSystem(const SYSTEM_TYPE& type)
+ControlledSystem<MANIFOLD, CONT_T>::ControlledSystem(const int control_dim, const SYSTEM_TYPE& type)
     : System<MANIFOLD, CONT_T>(type), controller_(nullptr)
 {
+    controlAction_.resize(control_dim);
 }
 
 template <typename MANIFOLD, bool CONT_T>
@@ -33,9 +34,11 @@ ControlledSystem<MANIFOLD, CONT_T>::ControlledSystem(const ControlledSystem& arg
 template <typename MANIFOLD, bool CONT_T>
 void ControlledSystem<MANIFOLD, CONT_T>::setController(const std::shared_ptr<Controller_t>& controller)
 {
-    controller_ = controller;
-    controlAction_.resize(controller->GetControlDim());
-    controlAction_.setZero();
+    if(controller != nullptr) {
+      controller_ = controller;
+      controlAction_.resize(controller->GetControlDim());
+      controlAction_.setZero();
+    }
 }
 
 template <typename MANIFOLD, bool CONT_T>
@@ -58,7 +61,9 @@ void ControlledSystem<MANIFOLD, CONT_T>::computeDynamics(const MANIFOLD& m,
     if (controller_)
         controller_->computeControl(m, t, controlAction_);
     else
+    {
         controlAction_.setZero();
+    }
 
     computeControlledDynamics(m, t, controlAction_, derivative);
 }

@@ -23,8 +23,6 @@ int main()
     m_ref.coeffs() << 1.0, 0.0, 0.0, 1.0;
 
     std::shared_ptr<TestSystemSE2> sys(new TestSystemSE2(1.0, controller, m_ref));
-    // ct::core::SE2d::Tangent dx;
-    // sys->computeControlledDynamics(m, 1.0, u, dx);
 
     Integrator<SE2d> integrator(sys);
 
