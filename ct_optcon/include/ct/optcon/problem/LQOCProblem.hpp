@@ -116,7 +116,7 @@ public:
         const constr_vec_t& u_lb,
         const constr_vec_t& u_ub,
         const VectorXi& sp,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_nom_abs);
+        const ct::core::ControlVector<SCALAR>& u_nom_abs);
 
     /*!
      * \brief set uniform input box constraints, with the same constraint being applied at each intermediate stage
@@ -130,7 +130,7 @@ public:
         const constr_vec_t& u_lb,
         const constr_vec_t& u_ub,
         const VectorXi& sp,
-        const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_nom_abs);
+        const ct::core::ControlVectorArray<SCALAR>& u_nom_abs);
 
     /*!
      * \brief set state box constraints at a specific index
@@ -197,14 +197,14 @@ public:
      * @param dt the sampling time, required for discretization
      */
     void setFromTimeInvariantLinearQuadraticProblem(const MANIFOLD& x0,
-        const core::ControlVector<CONTROL_DIM, SCALAR>& u0,
-        ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+        const core::ControlVector<SCALAR>& u0,
+        ct::core::LinearSystem<MANIFOLD, core::DISCRETE_TIME>& linearSystem,
         ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
         const typename MANIFOLD::Tangent& stateOffset,
         const double dt);
     void setFromTimeInvariantLinearQuadraticProblem(const ct::core::DiscreteArray<MANIFOLD>& x_traj,
-        const ct::core::DiscreteArray<core::ControlVector<CONTROL_DIM, SCALAR>>& u_traj,
-        ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+        const ct::core::DiscreteArray<core::ControlVector<SCALAR>>& u_traj,
+        ct::core::LinearSystem<MANIFOLD, core::DISCRETE_TIME>& linearSystem,
         ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
         const ct::core::DiscreteArray<typename MANIFOLD::Tangent>& stateOffset,
         const double dt);
@@ -218,7 +218,7 @@ public:
 
     //! affine, time-varying system dynamics in discrete time
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> A_;
-    ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> B_;
+    ct::core::StateControlMatrixArray<STATE_DIM, SCALAR> B_;
     ct::core::DiscreteArray<typename MANIFOLD::Tangent> b_;
 
     //! constant term of in the LQ approximation of the cost function
@@ -235,8 +235,8 @@ public:
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> Adj_x_;
 
     //! LQ approximation of the pure control penalty
-    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> rv_;
-    ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> R_;
+    ct::core::ControlVectorArray<SCALAR> rv_;
+    ct::core::ControlMatrixArray<SCALAR> R_;
 
     //! LQ approximation of the cross terms of the cost function
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> P_;

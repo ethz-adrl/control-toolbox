@@ -1,5 +1,17 @@
 
-#include <ct/optcon/optcon.h>
+#include <ct/core/core.h>
+#include <ct/optcon/costfunction/term/TermBase.hpp>
+#include <ct/optcon/costfunction/term/TermBase-impl.hpp>
+#include <ct/optcon/costfunction/CostFunction.hpp>
+#include <ct/optcon/costfunction/CostFunction-impl.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadratic-impl.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimple-impl.hpp>
+#include <ct/optcon/problem/LQOCProblem.hpp>
+#include <ct/optcon/problem/LQOCProblem-impl.hpp>
+#include <ct/optcon/solver/lqp/GNRiccatiSolver.hpp>
+#include <ct/optcon/solver/lqp/GNRiccatiSolver-impl.hpp>
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -9,35 +21,42 @@ using ManifoldState_t = ManifoldState<manif::SE3, manif::SE3Tangent>;
 const size_t state_dim = ManifoldState_t::TangentDim;
 const size_t control_dim = 6;
 
-class DiscrSE3LTITestSystem final : public ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>
+class DiscrSE3LTITestSystem final : public ct::core::ControlledSystem<ManifoldState_t, DISCRETE_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    using Base = ct::core::ControlledSystem<ManifoldState_t, DISCRETE_TIME>;
 
-    DiscrSE3LTITestSystem() {}
+    DiscrSE3LTITestSystem() : Base(control_dim) {}
     virtual void computeControlledDynamics(const ManifoldState_t& m,
         const Time_t& n,
-        const ct::core::ControlVector<control_dim>& u,
+        const ct::core::ControlVectord& u,
         ManifoldState_t::Tangent& dx) override
     {
+        if (u.size() != control_dim)
+            throw std::runtime_error("control vector is not control_dim in computeControlledDynamics().");
         dx = u;
     }
 
     virtual DiscrSE3LTITestSystem* clone() const override { return new DiscrSE3LTITestSystem(); }
-    /**
-     * @brief the log operator is defined as expressing the tangent vector w.r.t. m_ref_
-     */
-    virtual ManifoldState_t::Tangent lift(const ManifoldState_t& m) override
-    {
-        //throw std::runtime_error("not impl");
-        return ManifoldState_t::Tangent::Zero();  // the system stays where it is (combination with A = identity())
-        /*return m.rminus(m);*/
-    }
-    // virtual ManifoldState_t retract(const ManifoldState_t::Tangent& t) override {
-    //     throw std::runtime_error("not implemetned.");
-    //     /*return m_ref_.rplus(t);*/ }
-protected:
-    //ManifoldState_t m_ref_;
+};
+
+class DiscrSE3LinearSystem final : public ct::core::LinearSystem<ManifoldState_t, DISCRETE_TIME>
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    using Base = ct::core::LinearSystem<ManifoldState_t, DISCRETE_TIME>;
+
+    DiscrSE3LinearSystem() : Base(control_dim) {}
+    virtual DiscrSE3LinearSystem* clone() const override { return new DiscrSE3LinearSystem(); }
+
+    const ct::core::StateMatrix<state_dim>& getDerivativeState(const int t = 0.0) override { return A_; }
+    const ct::core::StateControlMatrix<state_dim>& getDerivativeControl(const int t = 0.0) override { return B_; }
+
+    // TODO: take-away - in a discrete system, A must not be zero but at least identity.
+    ct::core::StateMatrix<state_dim> A_ = ct::core::StateMatrix<state_dim>::Identity(state_dim, state_dim);
+    ct::core::StateControlMatrix<state_dim> B_ =
+        ct::core::StateControlMatrix<state_dim>::Identity(state_dim, control_dim);
 };
 
 void testCoordinateTransformCost()
@@ -126,24 +145,24 @@ void ocqpTest()
 {
     std::cout << std::fixed;
 
-    const bool use_single_shooting = true;  // toggle between single and multiple shooting
+    const bool use_single_shooting = false;  // toggle between single and multiple shooting
 
-    const size_t N = 50;
-    const double dt = 0.1;
+    const size_t N = 150;
+    const double dt = 1.0;
 
-    const ManifoldState_t x0 = manif::SE3<double>(0, 0, 0, 3.0, 0, 0);
+    const ManifoldState_t x0 = manif::SE3<double>(0, 1, 0, 0, 1, 0);
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
     ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
-        N + 1, ManifoldState_t::Tangent::Zero());                             // defect traj, will be overwritten
-    ct::core::DiscreteArray<ct::core::ControlVector<control_dim>> u_traj(N);  // init control traj
+        N + 1, ManifoldState_t::Tangent::Zero());                 // defect traj, will be overwritten
+    ct::core::DiscreteArray<ct::core::ControlVectord> u_traj(N);  // init control traj
     for (size_t i = 0; i < N; i++)
-        u_traj[i] = ct::core::ControlVector<control_dim>::Random() * 0.0;
+        u_traj[i] =
+            ct::core::ControlVectord::Random(control_dim) *
+            0.1;  // TODO: can we push the value function to a local minimum if we add initial control inputs that drive the system "one time around" ?
 
-    // choose a random initial state
-    // TODO: numerical trouble for more aggressive distributions, since the approximation of the value function becomes really bad?
     for (size_t i = 1; i < N + 1; i++)
     {
-        x_traj[i] = x0;  // ManifoldState_t::Random();
+        //x_traj[i] = ManifoldState_t::Random();
     }
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
@@ -169,41 +188,36 @@ void ocqpTest()
     problems.push_back(lqocProblem2);
 
     // create a discrete-time manifold system
-    std::shared_ptr<ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>> exampleSystem(
+    std::shared_ptr<ct::core::ControlledSystem<ManifoldState_t, DISCRETE_TIME>> exampleSystem(
         new DiscrSE3LTITestSystem());
-    std::shared_ptr<ct::core::SystemLinearizer<ManifoldState_t, control_dim, DISCRETE_TIME>> linearizer(
-        new ct::core::SystemLinearizer<ManifoldState_t, control_dim, DISCRETE_TIME>(exampleSystem));
+    std::shared_ptr<ct::core::LinearSystem<ManifoldState_t, DISCRETE_TIME>> linearSystem(new DiscrSE3LinearSystem());
 
 
     // create a cost function
-    Eigen::Matrix<double, state_dim, state_dim> Q, Q_final, Q_temp;
+    Eigen::Matrix<double, state_dim, state_dim> Q, Q_final;
     Eigen::Matrix<double, control_dim, control_dim> R;
-    Q_temp.setRandom();
     Q_final.setZero();
     Q.setZero();
     Q_final.diagonal() << 1000, 1000, 1000, 1000, 1000, 1000;
-    Q_final = Q_temp.transpose() * Q_final * Q_temp; 
     // std::cout << Q_final.eigenvalues() << std::endl;
     // std::cout << Q_final << std::endl;
-    Q.diagonal() << 1, 1, 1, 1, 1, 1;
-    Q = Q_temp.transpose() * Q * Q_temp;
+    Q.diagonal() << .1, .1, .1, .1, .1, .1;
     R.setZero();
-    R.diagonal() << 10, 10, 10, 10, 10, 10;
-    ManifoldState_t x_final = manif::SE3<double>(1, 1, 1, 0, 0, 0);
+    R.diagonal() << 1, 1, 1, 1, 1, 1;
+    ManifoldState_t x_final = manif::SE3<double>(1, 0, 1, 0, 0, 0);
     std::cout << "desired final state: " << x_final << std::endl;
     ManifoldState_t x_nominal = x_final;
-    ct::core::ControlVector<control_dim> u_nom = ct::core::ControlVector<control_dim>::Zero();
+    ct::core::ControlVectord u_nom = ct::core::ControlVectord::Zero(control_dim);
     std::shared_ptr<CostFunctionQuadratic<ManifoldState_t, control_dim>> costFunction(
         new CostFunctionQuadraticSimple<ManifoldState_t, control_dim>(Q, R, x_nominal, u_nom, x_final, Q_final));
 
 
     // integrate an initial state with the open-loop system to get initial trajectories
-    ManifoldState_t x_curr;
-    ManifoldState_t::Tangent dx;
-    x_curr = x0;
+    ManifoldState_t x_curr = x0;
     x_traj.front() = x0;
-    // std::cout << "integrate an random initial state with the unstable system" << std::endl;
-    // std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
+    ManifoldState_t::Tangent dx;
+    //std::cout << "integrate an random initial state with the unstable system" << std::endl;
+    //std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     for (size_t i = 0; i < N; i++)
     {
         exampleSystem->computeControlledDynamics(x_traj[i], 0, u_traj[i], dx);
@@ -215,13 +229,12 @@ void ocqpTest()
         // std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     }
 
-    size_t nIter = 20;
+    size_t nIter = 13;
     for (size_t iter = 0; iter < nIter; iter++)
     {
         // initialize the optimal control problems for both solvers
-        problems[0]->setFromTimeInvariantLinearQuadraticProblem(x_traj, u_traj, *linearizer, *costFunction, b, dt);
-        problems[1]->setFromTimeInvariantLinearQuadraticProblem(x_traj, u_traj, *linearizer, *costFunction, b, dt);
-
+        problems[0]->setFromTimeInvariantLinearQuadraticProblem(x_traj, u_traj, *linearSystem, *costFunction, b, dt);
+        problems[1]->setFromTimeInvariantLinearQuadraticProblem(x_traj, u_traj, *linearSystem, *costFunction, b, dt);
 
         // HACKY corrections // TODO: move somewhere meaningful
         for (size_t idx : {0})
@@ -231,15 +244,15 @@ void ocqpTest()
             {
                 Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
                 auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);
-                auto l_adj = (l.exp()).adj();
+                // auto l_adj = (l.exp()).adj();
+                // auto between_adj = x_traj[i + 1].between(x_traj[i]).adj();
 
-                auto m = Jl;  // best guess: Jl
+                auto m = Jl.transpose(); // transport matrix / adjoint from stage k+1 to stage k
+                problems[idx]->Adj_x_[i + 1] = m.inverse();  // TODO: could we find a different expression, e.g. something like -Jr?
 
-                problems[idx]->Adj_x_[i + 1] = l_adj;  // parallel transport matrix / adjoint from stage k+1 to stage k
-
-                problems[idx]->A_[i] = m.transpose() * problems[idx]->A_[i];
-                problems[idx]->B_[i] = m.transpose() * problems[idx]->B_[i];
-                problems[idx]->b_[i] = m.transpose() * problems[idx]->b_[i];
+                problems[idx]->A_[i] = m * problems[idx]->A_[i];
+                problems[idx]->B_[i] = m * problems[idx]->B_[i];
+                problems[idx]->b_[i] = m * problems[idx]->b_[i];
             }
 
             // set the problem pointers
@@ -261,7 +274,7 @@ void ocqpTest()
         auto xSol_riccati = lqocSolvers[0]->getSolutionState();
         auto uSol_riccati = lqocSolvers[0]->getSolutionControl();
         ct::core::FeedbackArray<state_dim, control_dim> KSol_riccati = lqocSolvers[0]->getSolutionFeedback();
-        ct::core::ControlVectorArray<control_dim> lv_sol_riccati = lqocSolvers[0]->get_lv();
+        ct::core::ControlVectorArray<double> lv_sol_riccati = lqocSolvers[0]->get_lv();
 
         // auto xSol_hpipm = lqocSolvers[1]->getSolutionState();
         // auto uSol_hpipm = lqocSolvers[1]->getSolutionControl();
@@ -333,12 +346,10 @@ void ocqpTest()
         for (size_t i = 0; i < N; i++)
         {
             dx.setZero();
-            Eigen::Quaterniond old_rot(
-                x_traj[i].quat().w(), x_traj[i].quat().x(), x_traj[i].quat().y(), x_traj[i].quat().z());
+            //Eigen::Quaterniond old_rot(x_traj[i].quat().w(), x_traj[i].quat().x(), x_traj[i].quat().y(), x_traj[i].quat().z());
 
             if (use_single_shooting)
             {
-                // TODO: some term is missing here;
                 ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i]);
                 u_traj[i] += lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/);
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
@@ -351,13 +362,13 @@ void ocqpTest()
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
             }
 
-            Eigen::Quaterniond new_rot(
-                x_traj[i + 1].quat().w(), x_traj[i + 1].quat().x(), x_traj[i + 1].quat().y(), x_traj[i + 1].quat().z());
+            //Eigen::Quaterniond new_rot(
+            //    x_traj[i + 1].quat().w(), x_traj[i + 1].quat().x(), x_traj[i + 1].quat().y(), x_traj[i + 1].quat().z());
             //std::cout << "m: " << x_traj[i + 1] << "\t dx: " << xSol_riccati[i + 1]
             //          << "\t -- rot diff norm(): " << old_rot.angularDistance(new_rot) << std::endl;
 
             // compute defect
-            b[i] = dx - x_traj[i + 1].rminus(x_traj[i]);
+            b[i] = dx - (x_traj[i + 1].rminus(x_traj[i]));
 
             // compute update norms
             d_cum_sum += b[i].coeffs().norm();
@@ -376,12 +387,14 @@ void ocqpTest()
                   << " \t Jcost: " << cost_sum << std::endl;
     }  // end iter
 
+    std::cout << "the final trajectory: " << std::endl;
 
     // save the x-trajectory to file
     std::vector<Eigen::Matrix3d> rot_traj;
     std::vector<Eigen::Vector3d> trans_traj;
     for (size_t i = 0; i < x_traj.size(); i++)
     {
+        std::cout << x_traj[i] << std::endl;
         rot_traj.push_back(x_traj[i].rotation());
         trans_traj.push_back(x_traj[i].translation());
     }

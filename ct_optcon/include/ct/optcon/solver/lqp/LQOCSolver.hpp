@@ -85,14 +85,14 @@ public:
     //! return solution for state
     const core::DiscreteArray<typename MANIFOLD::Tangent>& getSolutionState() { return x_sol_; }
     //! return solution for control
-    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& getSolutionControl() { return u_sol_; }
+    const ct::core::ControlVectorArray<SCALAR>& getSolutionControl() { return u_sol_; }
     //! return TVLQR feedback matrices
     virtual void computeFeedbackMatrices() = 0;
     const ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>& getSolutionFeedback() { return L_; }
     //! compute iLQR-style lv
     virtual void compute_lv() = 0;
     //! return iLQR-style feedforward lv
-    virtual const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& get_lv() { return lv_; }
+    virtual const ct::core::ControlVectorArray<SCALAR>& get_lv() { return lv_; }
     //! return the smallest eigenvalue
     virtual SCALAR getSmallestEigenvalue()
     {
@@ -106,9 +106,9 @@ protected:
     std::shared_ptr<LQOCProblem_t> lqocProblem_;
 
     core::DiscreteArray<typename MANIFOLD::Tangent> x_sol_;            // solution in x
-    core::ControlVectorArray<CONTROL_DIM, SCALAR> u_sol_;        // solution in u
+    core::ControlVectorArray<SCALAR> u_sol_;        // solution in u
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> L_;  // solution feedback
-    ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> lv_;       // feedforward increment (iLQR-style)
+    ct::core::ControlVectorArray<SCALAR> lv_;       // feedforward increment (iLQR-style)
 };
 
 }  // namespace optcon

@@ -22,11 +22,6 @@ TermBase<MANIFOLD, CONTROL_DIM>::TermBase(const TermBase& arg) : name_(arg.name_
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-TermBase<MANIFOLD, CONTROL_DIM>::~TermBase()
-{
-}
-
-template <typename MANIFOLD, size_t CONTROL_DIM>
 bool TermBase<MANIFOLD, CONTROL_DIM>::isActiveAtTime(SCALAR_EVAL t)
 {
     return c_i_->isActive(t);
@@ -40,7 +35,7 @@ auto TermBase<MANIFOLD, CONTROL_DIM>::computeActivation(const SCALAR_EVAL t) -> 
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto TermBase<MANIFOLD, CONTROL_DIM>::stateDerivative(const EVAL_MANIFOLD& x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const core::ControlVector<SCALAR_EVAL>& u,
     const SCALAR_EVAL& t) -> core::StateVector<STATE_DIM, SCALAR_EVAL>
 {
     throw std::runtime_error(
@@ -51,7 +46,7 @@ auto TermBase<MANIFOLD, CONTROL_DIM>::stateDerivative(const EVAL_MANIFOLD& x,
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto TermBase<MANIFOLD, CONTROL_DIM>::stateSecondDerivative(const EVAL_MANIFOLD& x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const core::ControlVector<SCALAR_EVAL>& u,
     const SCALAR_EVAL& t) -> state_matrix_t
 {
     throw std::runtime_error(
@@ -62,8 +57,8 @@ auto TermBase<MANIFOLD, CONTROL_DIM>::stateSecondDerivative(const EVAL_MANIFOLD&
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto TermBase<MANIFOLD, CONTROL_DIM>::controlDerivative(const EVAL_MANIFOLD& x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
-    const SCALAR_EVAL& t) -> core::ControlVector<CONTROL_DIM, SCALAR_EVAL>
+    const core::ControlVector<SCALAR_EVAL>& u,
+    const SCALAR_EVAL& t) -> core::ControlVector<SCALAR_EVAL>
 {
     throw std::runtime_error(
         "This cost function element is not implemented "
@@ -73,7 +68,7 @@ auto TermBase<MANIFOLD, CONTROL_DIM>::controlDerivative(const EVAL_MANIFOLD& x,
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto TermBase<MANIFOLD, CONTROL_DIM>::controlSecondDerivative(const EVAL_MANIFOLD& x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const core::ControlVector<SCALAR_EVAL>& u,
     const SCALAR_EVAL& t) -> control_matrix_t
 {
     throw std::runtime_error(
@@ -84,7 +79,7 @@ auto TermBase<MANIFOLD, CONTROL_DIM>::controlSecondDerivative(const EVAL_MANIFOL
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto TermBase<MANIFOLD, CONTROL_DIM>::stateControlDerivative(const EVAL_MANIFOLD& x,
-    const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    const core::ControlVector<SCALAR_EVAL>& u,
     const SCALAR_EVAL& t) -> control_state_matrix_t
 {
     throw std::runtime_error(
@@ -166,7 +161,7 @@ void TermBase<MANIFOLD, CONTROL_DIM>::updateReferenceState(const EVAL_MANIFOLD& 
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-void TermBase<MANIFOLD, CONTROL_DIM>::updateReferenceControl(const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u)
+void TermBase<MANIFOLD, CONTROL_DIM>::updateReferenceControl(const ct::core::ControlVector<SCALAR_EVAL>& u)
 {
 }
 

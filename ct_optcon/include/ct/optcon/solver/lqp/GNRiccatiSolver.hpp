@@ -33,14 +33,14 @@ public:
     typedef typename Base::LQOCProblem_t LQOCProblem_t;
 
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR> StateMatrix;
-    typedef ct::core::StateControlMatrix<STATE_DIM, control_dim, SCALAR> StateControlMatrix;
+    typedef ct::core::StateControlMatrix<STATE_DIM, SCALAR> StateControlMatrix;
     typedef ct::core::StateMatrixArray<STATE_DIM, SCALAR> StateMatrixArray;
-    typedef ct::core::ControlVector<CONTROL_DIM, SCALAR> ControlVector;
-    typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR> ControlMatrix;
-    typedef ct::core::ControlMatrixArray<CONTROL_DIM, SCALAR> ControlMatrixArray;
-    typedef ct::core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> StateControlMatrixArray;
+    typedef ct::core::ControlVector<SCALAR> ControlVector;
+    typedef ct::core::ControlMatrix<SCALAR> ControlMatrix;
+    typedef ct::core::ControlMatrixArray<SCALAR> ControlMatrixArray;
+    typedef ct::core::StateControlMatrixArray<STATE_DIM, SCALAR> StateControlMatrixArray;
     typedef ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> FeedbackArray;
-    typedef ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> ControlVectorArray;
+    typedef ct::core::ControlVectorArray<SCALAR> ControlVectorArray;
 
     GNRiccatiSolver(const std::shared_ptr<LQOCProblem_t>& lqocProblem = nullptr);
 

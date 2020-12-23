@@ -38,8 +38,8 @@ public:
     using Base = CostFunction<MANIFOLD, CONTROL_DIM>;
     using control_vector_t = typename Base::control_vector_t;
     typedef ct::core::StateMatrix<STATE_DIM, SCALAR_EVAL> state_matrix_t;
-    typedef ct::core::ControlMatrix<CONTROL_DIM, SCALAR_EVAL> control_matrix_t;
-    typedef ct::core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR_EVAL> control_state_matrix_t;
+    typedef ct::core::ControlMatrix<SCALAR_EVAL> control_matrix_t;
+    typedef ct::core::ControlStateMatrix<STATE_DIM, SCALAR_EVAL> control_state_matrix_t;
 
 
     /**
@@ -59,10 +59,6 @@ public:
 	 */
     virtual CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>* clone() const = 0;
 
-    /**
-	 * Destructor
-	 */
-    virtual ~CostFunctionQuadratic();
 
     /**
 	 * \brief Adds an intermediate term

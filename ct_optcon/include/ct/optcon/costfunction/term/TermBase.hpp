@@ -40,8 +40,8 @@ public:
     using EVAL_MANIFOLD = typename MANIFOLD::template RedefineScalar<SCALAR_EVAL>;
 
     using state_matrix_t = ct::core::StateMatrix<STATE_DIM, SCALAR_EVAL>;
-    using control_matrix_t = ct::core::ControlMatrix<CONTROL_DIM, SCALAR_EVAL>;
-    using control_state_matrix_t = ct::core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR_EVAL>;
+    using control_matrix_t = ct::core::ControlMatrix<SCALAR_EVAL>;
+    using control_state_matrix_t = ct::core::ControlStateMatrix<STATE_DIM, SCALAR_EVAL>;
 
     /**
 	 * \brief Default constructor
@@ -61,10 +61,6 @@ public:
 	 */
     virtual TermBase<MANIFOLD, CONTROL_DIM>* clone() const = 0;
 
-    /**
-	 * \brief Destructor
-	 */
-    virtual ~TermBase();
 
     /**
 	 * @brief      Evaluates the term at x, u, t
@@ -76,7 +72,7 @@ public:
 	 * @return     The evaluatated cost term, use SCALAR for compatibility with both autodiff and analytic evaluation
 	 */
     virtual SCALAR evaluate(const MANIFOLD& x,
-        const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u,
+        const ct::core::ControlVector<SCALAR>& u,
         const SCALAR& t) = 0;
 
     /**
@@ -93,27 +89,27 @@ public:
 
     //! compute derivative of this cost term w.r.t. the state
     virtual core::StateVector<STATE_DIM, SCALAR_EVAL> stateDerivative(const EVAL_MANIFOLD& x,
-        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const core::ControlVector<SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute second order derivative of this cost term w.r.t. the state
     virtual state_matrix_t stateSecondDerivative(const EVAL_MANIFOLD& x,
-        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const core::ControlVector<SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute derivative of this cost term w.r.t. the control input
-    virtual core::ControlVector<CONTROL_DIM, SCALAR_EVAL> controlDerivative(const EVAL_MANIFOLD& x,
-        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+    virtual core::ControlVector<SCALAR_EVAL> controlDerivative(const EVAL_MANIFOLD& x,
+        const core::ControlVector<SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute second order derivative of this cost term w.r.t. the control input
     virtual control_matrix_t controlSecondDerivative(const EVAL_MANIFOLD& x,
-        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const core::ControlVector<SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! compute the cross-term derivative (state-control) of this cost function term
     virtual control_state_matrix_t stateControlDerivative(const EVAL_MANIFOLD& x,
-        const core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& u,
+        const core::ControlVector<SCALAR_EVAL>& u,
         const SCALAR_EVAL& t);
 
     //! load this term from a configuration file
@@ -141,7 +137,7 @@ public:
     virtual void updateReferenceState(const EVAL_MANIFOLD& newRefState);
 
     //! updates the reference control for this term
-    virtual void updateReferenceControl(const ct::core::ControlVector<CONTROL_DIM, SCALAR_EVAL>& newRefControl);
+    virtual void updateReferenceControl(const ct::core::ControlVector<SCALAR_EVAL>& newRefControl);
 
     //! retrieve this term's current reference state
     virtual EVAL_MANIFOLD getReferenceState() const;

@@ -97,14 +97,14 @@ template <typename MANIFOLD, int CONTROL_DIM>
 void LQOCProblem<MANIFOLD, CONTROL_DIM>::setZero(const int& nGenConstr)
 {
     A_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
-    B_.setConstant(core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
+    B_.setConstant(core::StateControlMatrix<STATE_DIM, SCALAR>::Zero(STATE_DIM, CONTROL_DIM));
     b_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
-    P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero());
+    P_.setConstant(core::FeedbackMatrix<STATE_DIM, CONTROL_DIM, SCALAR>::Zero(CONTROL_DIM, STATE_DIM));
     qv_.setConstant(core::StateVector<STATE_DIM, SCALAR>::Zero());
     Q_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Zero());
     Adj_x_.setConstant(core::StateMatrix<STATE_DIM, SCALAR>::Identity());
-    rv_.setConstant(core::ControlVector<CONTROL_DIM, SCALAR>::Zero());
-    R_.setConstant(core::ControlMatrix<CONTROL_DIM, SCALAR>::Zero());
+    rv_.setConstant(core::ControlVector<SCALAR>::Zero(CONTROL_DIM));
+    R_.setConstant(core::ControlMatrix<SCALAR>::Zero(CONTROL_DIM, CONTROL_DIM));
     q_.setConstant((SCALAR)0.0);
 
     // reset the number of box constraints
@@ -137,7 +137,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setInputBoxConstraint(const int index,
     const constr_vec_t& u_lb,
     const constr_vec_t& u_ub,
     const VectorXi& sp,
-    const ct::core::ControlVector<CONTROL_DIM, SCALAR>& u_nom_abs)
+    const ct::core::ControlVector<SCALAR>& u_nom_abs)
 {
     if ((u_lb.rows() != u_ub.rows()) || (u_lb.size() != nConstr) || (sp.rows() != nConstr) ||
         (sp(sp.rows() - 1) > (CONTROL_DIM - 1)))
@@ -168,7 +168,7 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setInputBoxConstraints(const int nConst
     const constr_vec_t& u_lb,
     const constr_vec_t& u_ub,
     const VectorXi& sp,
-    const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& u_nom_abs)
+    const ct::core::ControlVectorArray<SCALAR>& u_nom_abs)
 {
     for (int i = 0; i < K_; i++)
         setInputBoxConstraint(i, nConstr, u_lb, u_ub, sp, u_nom_abs[i]);
@@ -274,8 +274,8 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setGeneralConstraints(const constr_vec_
 
 template <typename MANIFOLD, int CONTROL_DIM>
 void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProblem(const MANIFOLD& x0,
-    const core::ControlVector<CONTROL_DIM, SCALAR>& u0,
-    ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+    const core::ControlVector<SCALAR>& u0,
+    ct::core::LinearSystem<MANIFOLD, core::DISCRETE_TIME>& linearSystem,
     ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
     const typename MANIFOLD::Tangent& b,
     const double dt)
@@ -283,11 +283,11 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     setZero();
 
     core::StateMatrix<STATE_DIM, SCALAR> A;
-    core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
+    core::StateControlMatrix<STATE_DIM, SCALAR> B;
     linearSystem.getDerivatives(A, B, x0, u0, 0);
 
     A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A);
-    B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
+    B_ = core::StateControlMatrixArray<STATE_DIM, SCALAR>(K_, B);
     b_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, b);
 
     // feed current state and control to cost function
@@ -297,10 +297,10 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     Q_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_ + 1, costFunction.stateSecondDerivativeIntermediate() * dt);
     P_ =
         core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, costFunction.stateControlDerivativeIntermediate() * dt);
-    R_ = core::ControlMatrixArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate() * dt);
+    R_ = core::ControlMatrixArray<SCALAR>(K_, costFunction.controlSecondDerivativeIntermediate() * dt);
 
     qv_ = core::DiscreteArray<typename MANIFOLD::Tangent>(K_ + 1, costFunction.stateDerivativeIntermediate() * dt);
-    rv_ = core::ControlVectorArray<CONTROL_DIM, SCALAR>(K_, costFunction.controlDerivativeIntermediate() * dt);
+    rv_ = core::ControlVectorArray<SCALAR>(K_, costFunction.controlDerivativeIntermediate() * dt);
 
     // final stage
     Q_[K_] = costFunction.stateSecondDerivativeTerminal() * dt;
@@ -311,8 +311,8 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
 template <typename MANIFOLD, int CONTROL_DIM>
 void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProblem(
     const ct::core::DiscreteArray<MANIFOLD>& x_traj,
-    const ct::core::DiscreteArray<core::ControlVector<CONTROL_DIM, SCALAR>>& u_traj,
-    ct::core::LinearSystem<MANIFOLD, CONTROL_DIM, core::DISCRETE_TIME>& linearSystem,
+    const ct::core::DiscreteArray<core::ControlVector<SCALAR>>& u_traj,
+    ct::core::LinearSystem<MANIFOLD, core::DISCRETE_TIME>& linearSystem,
     ct::optcon::CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>& costFunction,
     const ct::core::DiscreteArray<typename MANIFOLD::Tangent>& b,
     const double dt)
@@ -322,14 +322,16 @@ void LQOCProblem<MANIFOLD, CONTROL_DIM>::setFromTimeInvariantLinearQuadraticProb
     if ((int)b.size() != K_ + 1)
         throw std::runtime_error("b size not correct.");
 
-    // get LTI dynamics
-    core::StateMatrix<STATE_DIM, SCALAR> A;
-    core::StateControlMatrix<STATE_DIM, CONTROL_DIM, SCALAR> B;
-    linearSystem.getDerivatives(A, B, x_traj.front(), u_traj.front(), 0);
-
-    A_ = core::StateMatrixArray<STATE_DIM, SCALAR>(K_, A); 
-    B_ = core::StateControlMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR>(K_, B);
-    b_ = b;
+    for (int i = 0; i < K_; i++)
+    {
+        // get LTI dynamics
+        core::StateMatrix<STATE_DIM, SCALAR> A;
+        core::StateControlMatrix<STATE_DIM, SCALAR> B;
+        linearSystem.SetLinearizationPoint(x_traj[i], u_traj[i]);
+        // get derivatives expressed at x, u setpoints.
+        linearSystem.getDerivatives(A_[i], B_[i], 0);
+    }
+    b_ = b;  // TODO: this is wrong.
 
     // eval costs around the reference trajectory
     for (int i = 0; i < K_; i++)

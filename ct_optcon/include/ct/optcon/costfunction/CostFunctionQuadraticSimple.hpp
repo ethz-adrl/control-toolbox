@@ -29,9 +29,9 @@ public:
     static constexpr size_t STATE_DIM = MANIFOLD::TangentDim;
 
     typedef core::StateMatrix<STATE_DIM, SCALAR> state_matrix_t;
-    typedef core::ControlMatrix<CONTROL_DIM, SCALAR> control_matrix_t;
-    typedef core::ControlStateMatrix<STATE_DIM, CONTROL_DIM, SCALAR> control_state_matrix_t;
-    typedef core::ControlVector<CONTROL_DIM, SCALAR> control_vector_t;
+    typedef core::ControlMatrix<SCALAR> control_matrix_t;
+    typedef core::ControlStateMatrix<STATE_DIM, SCALAR> control_state_matrix_t;
+    typedef core::ControlVector<SCALAR> control_vector_t;
 
     /**
      * Constructs a simple, purely quadratic cost function with all zero elements.
@@ -52,8 +52,6 @@ public:
         const control_vector_t& u_nominal,
         const MANIFOLD& x_final,
         const state_matrix_t& Q_final);
-
-    virtual ~CostFunctionQuadraticSimple();
 
     CostFunctionQuadraticSimple(const CostFunctionQuadraticSimple& arg);
 

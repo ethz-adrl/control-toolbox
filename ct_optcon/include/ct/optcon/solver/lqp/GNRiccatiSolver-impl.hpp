@@ -47,7 +47,7 @@ template <typename MANIFOLD, size_t CONTROL_DIM>
 void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::configure(const NLOptConSettings& settings)
 {
     settings_ = settings;
-    H_corrFix_ = settings_.epsilon * ControlMatrix::Identity();
+    H_corrFix_ = settings_.epsilon * ControlMatrix::Identity(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -68,7 +68,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::computeStatesAndControls()
         typename MANIFOLD::Tangent b_orig = p.Adj_x_[k + 1] * p.b_[k];  // b "without trick for backward pass"
         // Note that we need to transport the state update into the tagent space of k+1
         this->x_sol_[k + 1] =
-            p.Adj_x_[k + 1].transpose() * (A_orig * this->x_sol_[k] + B_orig * (this->u_sol_[k]) + b_orig);
+            p.Adj_x_[k + 1].inverse().transpose().inverse() * (A_orig * this->x_sol_[k] + B_orig * this->u_sol_[k] + b_orig);
     }
 }
 
@@ -180,7 +180,8 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
     if (settings_.fixedHessianCorrection)
     {
         if (settings_.epsilon > 1e-10)
-            Hi_[k] = H_[k] + settings_.epsilon * ControlMatrix::Identity();
+            Hi_[k] =
+                H_[k] + settings_.epsilon * ControlMatrix::Identity(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
         else
             Hi_[k] = H_[k];
 
@@ -194,7 +195,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
             smallestEigenvalue_ = std::min(smallestEigenvalue_, lambda.minCoeff());
 
             // Corrected Eigenvalue Matrix
-            ControlMatrix D = ControlMatrix::Zero();
+            ControlMatrix D = ControlMatrix::Zero(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
             // make D positive semi-definite (as described in IV. B.)
             D.diagonal() = lambda.cwiseMax(settings_.epsilon);
 
@@ -202,7 +203,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
             ControlMatrix Hi_regular = V * D * V.transpose();
 
             // invert D
-            ControlMatrix D_inverse = ControlMatrix::Zero();
+            ControlMatrix D_inverse = ControlMatrix::Zero(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
             // eigenvalue-wise inversion
             D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
             ControlMatrix Hi_inverse_regular = V * D_inverse * V.transpose();
@@ -216,7 +217,8 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
             }
         }
 
-        Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(ControlMatrix::Identity());
+        Hi_inverse_[k] = -Hi_[k].template selfadjointView<Eigen::Lower>().llt().solve(
+            ControlMatrix::Identity(CONTROL_DIM, CONTROL_DIM));  // todo: resize properly
 
         // calculate FB gain update
         this->L_[k].noalias() = Hi_inverse_[k].template selfadjointView<Eigen::Lower>() * G_[k];
@@ -237,7 +239,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
         }
 
         // Corrected Eigenvalue Matrix
-        ControlMatrix D = ControlMatrix::Zero();
+        ControlMatrix D = ControlMatrix::Zero(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
         // make D positive semi-definite (as described in IV. B.)
         D.diagonal() = lambda.cwiseMax(settings_.epsilon);
 
@@ -245,7 +247,7 @@ void GNRiccatiSolver<MANIFOLD, CONTROL_DIM>::designController(size_t k)
         Hi_[k].noalias() = V * D * V.transpose();
 
         // invert D
-        ControlMatrix D_inverse = ControlMatrix::Zero();
+        ControlMatrix D_inverse = ControlMatrix::Zero(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
         // eigenvalue-wise inversion
         D_inverse.diagonal() = -1.0 * D.diagonal().cwiseInverse();
         Hi_inverse_[k].noalias() = V * D_inverse * V.transpose();

@@ -32,32 +32,32 @@ struct SensitivityApproximationSettings
 };
 
 
-template <typename MANIFOLD, size_t CONTROL_DIM>
-class Sensitivity : public LinearSystem<MANIFOLD, CONTROL_DIM, DISCRETE_TIME>
+template <typename MANIFOLD>
+class Sensitivity : public LinearSystem<MANIFOLD, DISCRETE_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using SCALAR = typename MANIFOLD::Scalar;
-    using Base = LinearSystem<MANIFOLD, CONTROL_DIM, DISCRETE_TIME>;
+    using Base = LinearSystem<MANIFOLD, DISCRETE_TIME>;
     using Time_t = typename Base::Time_t;
     using control_vector_t = typename Base::control_vector_t;
     using state_matrix_t = typename Base::state_matrix_t;
     using state_control_matrix_t = typename Base::state_control_matrix_t;
 
     typedef std::shared_ptr<DiscreteArray<MANIFOLD>> StateVectorArrayPtr;
-    typedef std::shared_ptr<ControlVectorArray<CONTROL_DIM, SCALAR>> ControlVectorArrayPtr;
+    typedef std::shared_ptr<ControlVectorArray<SCALAR>> ControlVectorArrayPtr;
 
 
     Sensitivity() : xSubstep_(nullptr), uSubstep_(nullptr) {}
     virtual ~Sensitivity() {}
-    virtual Sensitivity<MANIFOLD, CONTROL_DIM>* clone() const override
+    virtual Sensitivity<MANIFOLD>* clone() const override
     {
         throw std::runtime_error("clone not implemented for Sensitivity");
     }
 
     virtual void setLinearSystem(
-        const std::shared_ptr<LinearSystem<MANIFOLD, CONTROL_DIM, CONTINUOUS_TIME>>& linearSystem) = 0;
+        const std::shared_ptr<LinearSystem<MANIFOLD, CONTINUOUS_TIME>>& linearSystem) = 0;
 
     //! update the time discretization
     virtual void setTimeDiscretization(const SCALAR& dt) = 0;

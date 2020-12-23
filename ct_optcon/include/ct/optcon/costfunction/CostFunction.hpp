@@ -28,7 +28,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     using SCALAR = typename MANIFOLD::Scalar;
-    using control_vector_t = core::ControlVector<CONTROL_DIM, SCALAR>;
+    using control_vector_t = core::ControlVector<SCALAR>;
 
     /**
 	 * \brief Default constructor

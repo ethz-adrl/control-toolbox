@@ -115,19 +115,16 @@ public:
         Tangent& dxdt)
     {
         // dx expressed in tangent space of m_ref_
-        Eigen::Matrix<SCALAR, MANIFOLD::TangentDim, MANIFOLD::TangentDim> Jl, Jr; 
-        auto dx = m.rminus(m_ref_, Jl, Jr);
+        Eigen::Matrix<SCALAR, MANIFOLD::TangentDim, MANIFOLD::TangentDim> Jm, Jmref;
+        auto dx = m.rminus(m_ref_, Jm, Jmref);
 
-// TODO: there are some things equivalent. -- Need to understand the relaton between Jr, Jl and Adj.
-std::cout << "Jl" << std::endl << Jl << std::endl;
-std::cout << "m.between(m_ref_).adj()" << std::endl << m.between(m_ref_).adj() << std::endl;
-
-        auto m_ref_adj_m = Jl; // m.between(m_ref_).adj();
+        auto m_ref_adj_m = Jm;  // works also with m.between(m_ref_).adj();
         // control input needs to be transported to m_ref_ to be compliant with u_ref
-        auto u_in_m_ref = m_ref_adj_m * u;
+        auto u_in_m_ref = m_ref_adj_m * u; // TODO: this cannot work -- dimension mismatch?
         auto dxdt_in_m_ref = getDerivativeState(t) * dx + getDerivativeControl(t) * (u_in_m_ref - u_ref_);
-        // TODO: dxdt needs to be transported back to m.
-        dxdt = /*dx.adj().inverse()*/ /*m_ref_adj_m.inverse() */ Jl.inverse() * dxdt_in_m_ref;
+        // dxdt needs to be transported back to m.
+        dxdt = /*dx.adj().inverse()*/ /*m_ref_adj_m.inverse() */ Jm.inverse() * dxdt_in_m_ref;
+        // TODO: we should get rid of that inversion above.
     }
 
     // discrete-time specialization

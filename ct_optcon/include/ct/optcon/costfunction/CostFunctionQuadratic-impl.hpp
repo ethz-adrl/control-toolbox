@@ -35,11 +35,6 @@ CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::CostFunctionQuadratic(const CostFu
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
-CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::~CostFunctionQuadratic()
-{
-}
-
-template <typename MANIFOLD, size_t CONTROL_DIM>
 void CostFunctionQuadratic<MANIFOLD, CONTROL_DIM>::loadFromConfigFile(const std::string& filename, bool verbose)
 {
     throw std::runtime_error("not implemented");
