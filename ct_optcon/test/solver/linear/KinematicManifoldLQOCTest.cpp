@@ -145,20 +145,22 @@ void ocqpTest()
 {
     std::cout << std::fixed;
 
-    const bool use_single_shooting = false;  // toggle between single and multiple shooting
+    const bool use_single_shooting = true;  // toggle between single and multiple shooting
 
     const size_t N = 150;
     const double dt = 1.0;
 
-    const ManifoldState_t x0 = manif::SE3<double>(0, 1, 0, 0, 1, 0);
+    const ManifoldState_t x0 = manif::SE3<double>(1, 0, 0, 1, 0, 1);
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
     ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
         N + 1, ManifoldState_t::Tangent::Zero());                 // defect traj, will be overwritten
     ct::core::DiscreteArray<ct::core::ControlVectord> u_traj(N);  // init control traj
     for (size_t i = 0; i < N; i++)
+    {
         u_traj[i] =
             ct::core::ControlVectord::Random(control_dim) *
             0.1;  // TODO: can we push the value function to a local minimum if we add initial control inputs that drive the system "one time around" ?
+    }
 
     for (size_t i = 1; i < N + 1; i++)
     {
@@ -204,7 +206,7 @@ void ocqpTest()
     Q.diagonal() << .1, .1, .1, .1, .1, .1;
     R.setZero();
     R.diagonal() << 1, 1, 1, 1, 1, 1;
-    ManifoldState_t x_final = manif::SE3<double>(1, 0, 1, 0, 0, 0);
+    ManifoldState_t x_final = manif::SE3<double>(0, 0, 0, 0, 1, 0);
     std::cout << "desired final state: " << x_final << std::endl;
     ManifoldState_t x_nominal = x_final;
     ct::core::ControlVectord u_nom = ct::core::ControlVectord::Zero(control_dim);
@@ -247,8 +249,9 @@ void ocqpTest()
                 // auto l_adj = (l.exp()).adj();
                 // auto between_adj = x_traj[i + 1].between(x_traj[i]).adj();
 
-                auto m = Jl.transpose(); // transport matrix / adjoint from stage k+1 to stage k
-                problems[idx]->Adj_x_[i + 1] = m.inverse();  // TODO: could we find a different expression, e.g. something like -Jr?
+                auto m = Jl.transpose();  // transport matrix / adjoint from stage k+1 to stage k
+                problems[idx]->Adj_x_[i + 1] =
+                    m.inverse();  // TODO: could we find a different expression, e.g. something like -Jr?
 
                 problems[idx]->A_[i] = m * problems[idx]->A_[i];
                 problems[idx]->B_[i] = m * problems[idx]->B_[i];
@@ -350,7 +353,8 @@ void ocqpTest()
 
             if (use_single_shooting)
             {
-                ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i]);
+                Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
+                ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i], Jl, Jr);
                 u_traj[i] += lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/);
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
                 x_traj[i + 1] = x_traj[i] + dx;
