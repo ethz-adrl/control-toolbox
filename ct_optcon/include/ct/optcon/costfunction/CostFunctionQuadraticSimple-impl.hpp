@@ -71,7 +71,7 @@ void CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::setCurrentStateAndContr
     this->u_ = u;
     this->t_ = t;
 
-    x_deviation_ = this->x_nominal_.rminus(this->x_, Jl_, Jr_);  // error expressed w.r.t. x
+    x_deviation_ = this->x_.rminus(this->x_nominal_, Jl_, Jr_);  // error expressed w.r.t. x
 
     Adj_ = Jl_;  //x_deviation_.exp().adj();
 
@@ -89,13 +89,13 @@ auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::evaluateIntermediate() 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 typename MANIFOLD::Tangent CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::stateDerivativeIntermediate()
 {
-    return Jr_.transpose() * Q_ * x_deviation_;
+    return Jl_.transpose() * Q_ * x_deviation_;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeIntermediate() -> state_matrix_t
 {
-    return Jr_.transpose() * Q_ * Jr_;
+    return Jl_.transpose() * Q_ * Jl_;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
@@ -119,7 +119,7 @@ auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::stateControlDerivativeI
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::evaluateTerminal() -> SCALAR
 {
-    typename MANIFOLD::Tangent x_deviation_final = this->x_final_.rminus(this->x_);
+    typename MANIFOLD::Tangent x_deviation_final = this->x_.rminus(this->x_final_);
     return SCALAR(0.5) * (x_deviation_final.transpose() * Q_final_ * x_deviation_final)(0);
 }
 
@@ -127,16 +127,16 @@ template <typename MANIFOLD, size_t CONTROL_DIM>
 typename MANIFOLD::Tangent CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::stateDerivativeTerminal()
 {
     Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jl, Jr;
-    typename MANIFOLD::Tangent x_deviation_final = this->x_final_.rminus(this->x_, Jl, Jr);
-    return Jr.transpose() * Q_final_ * x_deviation_final;
+    typename MANIFOLD::Tangent x_deviation_final = this->x_.rminus(this->x_final_, Jl, Jr);
+    return Jl.transpose() * Q_final_ * x_deviation_final;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>
 auto CostFunctionQuadraticSimple<MANIFOLD, CONTROL_DIM>::stateSecondDerivativeTerminal() -> state_matrix_t
 {
     Eigen::Matrix<typename MANIFOLD::Scalar, STATE_DIM, STATE_DIM> Jl, Jr;
-    typename MANIFOLD::Tangent x_deviation_final = this->x_final_.rminus(this->x_, Jl, Jr);
-    return Jr.transpose() * Q_final_ * Jr;
+    typename MANIFOLD::Tangent x_deviation_final = this->x_.rminus(this->x_final_, Jl, Jr);
+    return Jl.transpose() * Q_final_ * Jl;
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>

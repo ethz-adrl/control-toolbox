@@ -8,6 +8,8 @@
 #include <ct/optcon/costfunction/CostFunctionQuadratic-impl.hpp>
 #include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
 #include <ct/optcon/costfunction/CostFunctionQuadraticSimple-impl.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimpleWaypoints.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimpleWaypoints-impl.hpp>
 #include <ct/optcon/problem/LQOCProblem.hpp>
 #include <ct/optcon/problem/LQOCProblem-impl.hpp>
 #include <ct/optcon/solver/lqp/GNRiccatiSolver.hpp>
@@ -147,10 +149,14 @@ void ocqpTest()
 
     const bool use_single_shooting = true;  // toggle between single and multiple shooting
 
-    const size_t N = 150;
+    const size_t N = 50;
     const double dt = 1.0;
 
-    const ManifoldState_t x0 = manif::SE3<double>(1, 0, 0, 1, 0, 1);
+    const ManifoldState_t x0 = manif::SE3<double>(0, 0, 0, 0, 0, 0);
+
+    std::vector<ManifoldState_t> target_poses{
+        manif::SE3<double>(0, 0, 0, 0, 0.8* M_PI, 0), manif::SE3<double>(0, 0, 0, 0.8*M_PI, 0, 0), manif::SE3<double>(0, 0, 0, 0, -M_PI, -M_PI)};
+
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
     ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
         N + 1, ManifoldState_t::Tangent::Zero());                 // defect traj, will be overwritten
@@ -159,12 +165,15 @@ void ocqpTest()
     {
         u_traj[i] =
             ct::core::ControlVectord::Random(control_dim) *
-            0.1;  // TODO: can we push the value function to a local minimum if we add initial control inputs that drive the system "one time around" ?
+            0;  // TODO: can we push the value function to a local minimum if we add initial control inputs that drive the system "one time around" ?
     }
 
     for (size_t i = 1; i < N + 1; i++)
     {
-        //x_traj[i] = ManifoldState_t::Random();
+        // Initialize the initial guess trajectory with waypoints.
+        double percent = std::min(double(i) / double(N), 1.0);
+        size_t waypoint_idx = std::min((size_t)(percent * target_poses.size()), target_poses.size() - 1);
+        x_traj[i] = target_poses[waypoint_idx];
     }
 
     // create instances of HPIPM and an unconstrained Gauss-Newton Riccati solver
@@ -200,18 +209,17 @@ void ocqpTest()
     Eigen::Matrix<double, control_dim, control_dim> R;
     Q_final.setZero();
     Q.setZero();
-    Q_final.diagonal() << 1000, 1000, 1000, 1000, 1000, 1000;
-    // std::cout << Q_final.eigenvalues() << std::endl;
-    // std::cout << Q_final << std::endl;
+    Q_final.diagonal() << 100, 100, 100, 100, 100, 100;
     Q.diagonal() << .1, .1, .1, .1, .1, .1;
     R.setZero();
     R.diagonal() << 1, 1, 1, 1, 1, 1;
-    ManifoldState_t x_final = manif::SE3<double>(0, 0, 0, 0, 1, 0);
-    std::cout << "desired final state: " << x_final << std::endl;
-    ManifoldState_t x_nominal = x_final;
-    ct::core::ControlVectord u_nom = ct::core::ControlVectord::Zero(control_dim);
+    std::vector<ct::core::ControlVectord> u_nom(target_poses.size(), ct::core::ControlVectord::Zero(control_dim));
+
+    ManifoldState_t x_final = manif::SE3<double>(0, 0, 0, 2 * M_PI, 0, 0);
+
     std::shared_ptr<CostFunctionQuadratic<ManifoldState_t, control_dim>> costFunction(
-        new CostFunctionQuadraticSimple<ManifoldState_t, control_dim>(Q, R, x_nominal, u_nom, x_final, Q_final));
+        new CostFunctionQuadraticSimpleWaypoints<ManifoldState_t, control_dim>(
+            Q, R, target_poses, u_nom, x_final, Q_final, dt * N));
 
 
     // integrate an initial state with the open-loop system to get initial trajectories
@@ -247,7 +255,7 @@ void ocqpTest()
                 Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
                 auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);
                 // auto l_adj = (l.exp()).adj();
-                // auto between_adj = x_traj[i + 1].between(x_traj[i]).adj();
+                auto between_adj = x_traj[i + 1].between(x_traj[i]).adj();
 
                 auto m = Jl.transpose();  // transport matrix / adjoint from stage k+1 to stage k
                 problems[idx]->Adj_x_[i + 1] =
@@ -355,7 +363,8 @@ void ocqpTest()
             {
                 Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
                 ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i], Jl, Jr);
-                u_traj[i] += lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/);
+                const double alpha = 0.75;
+                u_traj[i] += alpha * (lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/));
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
                 x_traj[i + 1] = x_traj[i] + dx;
             }
@@ -396,14 +405,22 @@ void ocqpTest()
     // save the x-trajectory to file
     std::vector<Eigen::Matrix3d> rot_traj;
     std::vector<Eigen::Vector3d> trans_traj;
+    std::vector<Eigen::Vector4d> quat_coeff_traj;
     for (size_t i = 0; i < x_traj.size(); i++)
     {
         std::cout << x_traj[i] << std::endl;
+
         rot_traj.push_back(x_traj[i].rotation());
         trans_traj.push_back(x_traj[i].translation());
+
+        Eigen::Quaterniond quat(x_traj[i].rotation());
+        Eigen::Vector4d quat_coeffs;
+        quat_coeffs << quat.x(), quat.y(), quat.z(), quat.w();
+        quat_coeff_traj.push_back(quat_coeffs);
     }
     EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/rot_traj.csv", rot_traj);
     EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/trans_traj.csv", trans_traj);
+    EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/quat_traj.csv", quat_coeff_traj);
 }
 
 
@@ -411,5 +428,5 @@ int main(int argc, char** argv)
 {
     //testCoordinateTransformCost();
     ocqpTest();
-    return 1;
+    return 0;
 }
