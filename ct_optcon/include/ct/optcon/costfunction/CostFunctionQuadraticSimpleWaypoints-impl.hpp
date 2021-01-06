@@ -120,7 +120,7 @@ template <typename MANIFOLD, size_t CONTROL_DIM>
 auto CostFunctionQuadraticSimpleWaypoints<MANIFOLD, CONTROL_DIM>::stateControlDerivativeIntermediate()
     -> control_state_matrix_t
 {
-    return control_state_matrix_t::Zero(CONTROL_DIM, CONTROL_DIM);  // todo: resize properly
+    return control_state_matrix_t::Zero(CONTROL_DIM, STATE_DIM);  // todo: resize properly
 }
 
 template <typename MANIFOLD, size_t CONTROL_DIM>

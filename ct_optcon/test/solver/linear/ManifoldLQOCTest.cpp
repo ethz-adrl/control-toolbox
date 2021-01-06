@@ -1,5 +1,19 @@
 
-#include <ct/optcon/optcon.h>
+#include <ct/core/core.h>
+#include <ct/optcon/costfunction/term/TermBase.hpp>
+#include <ct/optcon/costfunction/term/TermBase-impl.hpp>
+#include <ct/optcon/costfunction/CostFunction.hpp>
+#include <ct/optcon/costfunction/CostFunction-impl.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadratic.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadratic-impl.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimple.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimple-impl.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimpleWaypoints.hpp>
+#include <ct/optcon/costfunction/CostFunctionQuadraticSimpleWaypoints-impl.hpp>
+#include <ct/optcon/problem/LQOCProblem.hpp>
+#include <ct/optcon/problem/LQOCProblem-impl.hpp>
+#include <ct/optcon/solver/lqp/GNRiccatiSolver.hpp>
+#include <ct/optcon/solver/lqp/GNRiccatiSolver-impl.hpp>
 
 using namespace ct::core;
 using namespace ct::optcon;
@@ -94,17 +108,17 @@ public:
         return *this;
     }
 
-    CompositeManifold<POS_MAN, VEL_MAN, POS_TANGENT, VEL_TANGENT> exp(OptJacobianRef J_m_t = OptJacobianRef{}) const
-    {
-        if (J_m_t)
-        {
-            throw std::runtime_error("J-m-t in tangent exp not impl yet.");
-        }
+    // CompositeManifold<POS_MAN, VEL_MAN, POS_TANGENT, VEL_TANGENT> exp(OptJacobianRef J_m_t = OptJacobianRef{}) const
+    // {
+    //     if (J_m_t)
+    //     {
+    //         throw std::runtime_error("J-m-t in tangent exp not impl yet.");
+    //     }
 
-        CompositeManifold<POS_MAN, VEL_MAN, POS_TANGENT, VEL_TANGENT> c(
-            this->t_pos_.exp(), this->t_pos_.exp().adj().transpose() * this->t_vel_.coeffs());
-        return c;
-    }
+    //     CompositeManifold<POS_MAN, VEL_MAN, POS_TANGENT, VEL_TANGENT> c(
+    //         this->t_pos_.exp(), this->t_pos_.exp().adj().transpose() * this->t_vel_.coeffs());
+    //     return c;
+    // }
 
     const Scalar* data() const { return coeffs().data(); }
     auto transpose() const { return coeffs().transpose(); }
@@ -203,28 +217,34 @@ public:
         typename POS_MAN::Jacobian pJl, pJr;
         typename VEL_MAN::Jacobian vJl, vJr;
 
+        CompositeManifold c;
+        c.pos() = pos().rplus(t.pos(), pJl, pJr);  // todo make jacobians optional
+
         VEL_MAN v_new_local = vel().rplus(t.vel(), vJl, vJr);
 
-        VEL_MAN v_new_transported(t.pos().exp().adj().transpose() * v_new_local.coeffs());
+        // The adjoint for transporting velocities to the new pose.
+        Eigen::Matrix<double, VEL_MAN::DoF, VEL_MAN::DoF> adj = t.pos().exp().adj().inverse();
 
-        CompositeManifold c;
+        VEL_MAN v_new_transported(adj * v_new_local.coeffs());
+
         c.vel() = v_new_transported;
         //c.vel() = c.vel().rplus(t.vel(), vJl, vJr);
-        c.pos() = pos().rplus(t.pos(), pJl, pJr);  // todo make jacobians optional
 
         if (Jl)
         {
-            Jl->setZero();
-            (*Jl).template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = pJl;
-            (*Jl).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJl;
+            throw std::runtime_error("Jl operation not in use.");
+            // Jl->setZero();
+            // (*Jl).template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = pJl;
+            // (*Jl).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJl;
         }
 
         if (Jr)
         {
-            Jr->setZero();
-            (*Jr).template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = pJr;
-            (*Jr).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() =
-                vJr;  // TODO: what will the velocity jacobians become?
+            throw std::runtime_error("Jr operation not in use.");
+            // Jr->setZero();
+            // (*Jr).template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = pJr;
+            // (*Jr).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() =
+            //     vJr;  // TODO: what will the velocity jacobians become?
         }
 
         return c;
@@ -242,8 +262,12 @@ public:
         typename VEL_MAN::Jacobian vJl, vJr;
 
         Tangent t;
-        t.set_pos(pos().rminus(rhs.pos(), pJl, pJr));  // todo make jacobians optional
-        VEL_MAN v_lhs_transported(t.pos().exp().adj() * vel().coeffs());
+        t.set_pos(pos().rminus(rhs.pos(), pJl, pJr));  // TODO make jacobians optional
+
+        // compute the adjoint for transporting velocities.
+        Eigen::Matrix<double, VEL_MAN::DoF, VEL_MAN::DoF> adj = t.pos().exp().adj();
+
+        VEL_MAN v_lhs_transported(adj * vel().coeffs());
 
         VEL_TANGENT v_new_local = v_lhs_transported.rminus(rhs.vel(), vJl, vJr);
         t.set_vel(v_new_local);
@@ -252,38 +276,38 @@ public:
         {
             Jl->setIdentity();
             (*Jl).template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = pJl;
-            (*Jl).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJl;
+            (*Jl).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = adj;
         }
 
         if (Jr)
         {
             Jr->setIdentity();
             (*Jr).template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = pJr;
-            (*Jr).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJr;
+            // TODO: this is likely not correct.
+            (*Jr).template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = vJr;  
         }
 
-        // Das was ich hier als Jacobian verkaufe, was ist das eigentlich?
         return t;
     }
 
 
-    Tangent log(OptJacobianRef J_t_m = {}) const
-    {
-        if (J_t_m)
-            throw std::runtime_error("J_t_m computation not defined.");
+    // Tangent log(OptJacobianRef J_t_m = {}) const
+    // {
+    //     if (J_t_m)
+    //         throw std::runtime_error("J_t_m computation not defined.");
 
-        return rminus(CompositeManifold::Identity(), J_t_m);
-    }
+    //     return rminus(CompositeManifold::Identity(), J_t_m);
+    // }
 
-    Jacobian adj() const
-    {
-        Jacobian J = Jacobian::Zero();
-        J.template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = m_pos_.adj();
-        J.template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = m_pos_.adj();
+    // Jacobian adj() const
+    // {
+    //     Jacobian J = Jacobian::Zero();
+    //     J.template topLeftCorner<POS_MAN::DoF, POS_MAN::DoF>() = m_pos_.adj();
+    //     J.template bottomRightCorner<VEL_MAN::DoF, VEL_MAN::DoF>() = m_pos_.adj();
 
-// die adjoint hier ist eine reine rotation
-        return J;
-    }
+    //     // die adjoint hier ist eine reine rotation
+    //     return J;
+    // }
 
     POS_MAN& pos() { return m_pos_; }
     const POS_MAN& pos() const { return m_pos_; }
@@ -294,6 +318,7 @@ protected:
     POS_MAN m_pos_;
     VEL_MAN m_vel_;
 };
+
 template <typename _Stream, typename t1, typename t2, typename t3, typename t4>
 _Stream& operator<<(_Stream& s, const CompositeManifold<t1, t2, t3, t4>& m)
 {
@@ -307,17 +332,22 @@ const size_t state_dim = ManifoldState_t::TangentDim;
 const size_t control_dim = 3;
 
 
-class DiscrSO3LTITestSystem final : public ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>
+class DiscrSO3LTITestSystem final : public ct::core::ControlledSystem<ManifoldState_t, DISCRETE_TIME>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    using Base = ct::core::ControlledSystem<ManifoldState_t, DISCRETE_TIME>;
 
-    DiscrSO3LTITestSystem(double dt) : dt_(dt) {}
+    DiscrSO3LTITestSystem(double dt) : Base(control_dim), dt_(dt) {}
+
     virtual void computeControlledDynamics(const ManifoldState_t& m,
         const Time_t& n,
-        const ct::core::ControlVector<control_dim>& u,
+        const ct::core::ControlVectord& u,
         ManifoldState_t::Tangent& dx) override
     {
+        if (u.size() != control_dim)
+            throw std::runtime_error("control vector is not control_dim in computeControlledDynamics().");
+
         dx.setZero();
         dx.set_vel(dt_ * u);                 // velocity increment
         dx.set_pos(dt_ * m.vel().coeffs());  // position increment
@@ -327,16 +357,42 @@ public:
     /**
      * @brief the log operator is defined as expressing the tangent vector w.r.t. the current position trajectory
      */
-    virtual ManifoldState_t::Tangent lift(const ManifoldState_t& m) override
-    {
-        ManifoldState_t::Tangent t = ManifoldState_t::Tangent::Zero();
-        // t.set_pos() = ZERO // important!
-        t.set_vel(m.vel().log());
-        return t;
-    }
+    // virtual ManifoldState_t::Tangent lift(const ManifoldState_t& m) override
+    // {
+    //     ManifoldState_t::Tangent t = ManifoldState_t::Tangent::Zero();
+    //     // t.set_pos() = ZERO // important!
+    //     t.set_vel(m.vel().log());
+    //     return t;
+    // }
 
 protected:
     double dt_;
+};
+
+
+class DiscrSO3LinearSystem final : public ct::core::LinearSystem<ManifoldState_t, DISCRETE_TIME>
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    using Base = ct::core::LinearSystem<ManifoldState_t, DISCRETE_TIME>;
+
+    DiscrSO3LinearSystem(const double dt) : Base(control_dim)
+    {
+        A_ = ct::core::StateMatrix<state_dim>::Identity(state_dim, state_dim);
+        A_.topRightCorner(state_dim / 2, state_dim / 2).diagonal().setConstant(dt);
+
+        B_ = ct::core::StateControlMatrix<state_dim>::Zero(state_dim, control_dim);
+        B_.bottomLeftCorner(control_dim, control_dim).diagonal().setConstant(dt);
+    }
+
+    virtual DiscrSO3LinearSystem* clone() const override { return new DiscrSO3LinearSystem(*this); }
+
+    const ct::core::StateMatrix<state_dim>& getDerivativeState(const int t = 0.0) override { return A_; }
+    const ct::core::StateControlMatrix<state_dim>& getDerivativeControl(const int t = 0.0) override { return B_; }
+
+private:
+    ct::core::StateMatrix<state_dim> A_;
+    ct::core::StateControlMatrix<state_dim> B_;
 };
 
 
@@ -344,65 +400,76 @@ int main(int argc, char** argv)
 {
     std::cout << std::fixed;
 
-    const bool use_single_shooting = true;  // toggle between single and multiple shooting
+    // TODO: for some reason, the single shooting case does currently not work. The multiple-shooting case works.
+    // The error must therefore be in the forward integration or in the defect.
+    const bool use_single_shooting = false;  // toggle between single and multiple shooting
 
-    const size_t N = 17;
-    const double dt = 0.1;
+    const size_t N = 50;
+    const double dt = .1;
 
     ManifoldState_t x0;
     x0.setIdentity();
-    x0.pos() = manif::SO3<double>(M_PI / 2, M_PI / 2, 0.0);
+    x0.pos() = manif::SO3<double>(0, 0, 0);
+
+    std::vector<ManifoldState_t> target_poses(3);
+    target_poses[0].setIdentity();
+    target_poses[1].setIdentity();
+    target_poses[2].setIdentity();
+    target_poses[0].pos() = manif::SO3<double>(0, M_PI / 2, 0);
+    target_poses[1].pos() = manif::SO3<double>(M_PI / 2, 0, 0);
+    target_poses[2].pos() = manif::SO3<double>(0, M_PI / 4, M_PI/2);
+
+
     ct::core::DiscreteArray<ManifoldState_t> x_traj(N + 1, x0);  // init state trajectory, will be overwritten
     ct::core::DiscreteArray<ManifoldState_t::Tangent> b(
-        N + 1, ManifoldState_t::Tangent::Zero());                             // defect traj, will be overwritten
-    ct::core::DiscreteArray<ct::core::ControlVector<control_dim>> u_traj(N);  // init control traj
+        N + 1, ManifoldState_t::Tangent::Zero());                 // defect traj, will be overwritten
+    ct::core::DiscreteArray<ct::core::ControlVectord> u_traj(N);  // init control traj
     for (size_t i = 0; i < N; i++)
     {
-        u_traj[i] = ct::core::ControlVector<control_dim>::Random();
+        u_traj[i] = ct::core::ControlVectord::Random(control_dim) * 0.0;
     }
 
     // choose a random initial state
     // TODO: numerical trouble for more aggressive distributions, since the approximation of the value function becomes really bad?
     for (size_t i = 1; i < N + 1; i++)
     {
-        x_traj[i] = ManifoldState_t::Random();
+        // Initialize the initial guess trajectory with waypoints.
+        double percent = std::min(double(i) / double(N), 1.0);
+        size_t waypoint_idx = std::min((size_t)(percent * target_poses.size()), target_poses.size() - 1);
+        x_traj[i] = target_poses[waypoint_idx];
     }
 
-    // create instances of HPIPM and an unconstrained Gauss-Newton Riccati gnSolver
     std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> gnSolver(
         new GNRiccatiSolver<ManifoldState_t, control_dim>);
-    // std::shared_ptr<LQOCSolver<ManifoldState_t, control_dim>> hpipmSolver(
-    //     new HPIPMInterface<ManifoldState_t, control_dim>);
 
     // create linear-quadratic optimal control problem containers
     std::shared_ptr<LQOCProblem<ManifoldState_t, control_dim>> problem(
         new LQOCProblem<ManifoldState_t, control_dim>(N));
 
     // create a discrete-time manifold system
-    std::shared_ptr<ct::core::ControlledSystem<ManifoldState_t, control_dim, DISCRETE_TIME>> exampleSystem(
+    std::shared_ptr<ct::core::ControlledSystem<ManifoldState_t, DISCRETE_TIME>> exampleSystem(
         new DiscrSO3LTITestSystem(dt));
-    std::shared_ptr<ct::core::SystemLinearizer<ManifoldState_t, control_dim, DISCRETE_TIME>> linearizer(
-        new ct::core::SystemLinearizer<ManifoldState_t, control_dim, DISCRETE_TIME>(exampleSystem));
-
+    std::shared_ptr<ct::core::LinearSystem<ManifoldState_t, DISCRETE_TIME>> linearSystem(new DiscrSO3LinearSystem(dt));
 
     // create a cost function
     Eigen::Matrix<double, state_dim, state_dim> Q, Q_final;
     Eigen::Matrix<double, control_dim, control_dim> R;
     Q_final.setZero();
-    Q_final.diagonal() << 10000, 10000, 10000, 10000, 100000, 10000;
+    Q_final.diagonal() << 15000, 15000, 15000, 15000, 150000, 15000;
     Q.setZero();
-    Q.diagonal() << 3, 3, 3, 3, 3, 3;
+    Q.diagonal() << 300, 300, 300, 0, 0, 0;
     R.setZero();
-    R.diagonal() << 1, 1, 1;
+    R.diagonal() << .5, .5, .5;
     ManifoldState_t x_final;
+    x_final.setIdentity();
     x_final.pos() = manif::SO3<double>(0, 0, 0);
-    std::cout << "desired final state: " << x_final << std::endl;
-    ManifoldState_t x_nominal = x_final;
-    ct::core::ControlVector<control_dim> u_nom = ct::core::ControlVector<control_dim>::Zero();
+    //std::cout << "desired final state: " << x_final << std::endl;
+    std::vector<ct::core::ControlVectord> u_nom(target_poses.size(), ct::core::ControlVectord::Zero(control_dim));
 
     // TODO: this currently only works with CostFunctionQuadratic simple (others not ported yet)
     std::shared_ptr<CostFunctionQuadratic<ManifoldState_t, control_dim>> costFunction(
-        new CostFunctionQuadraticSimple<ManifoldState_t, control_dim>(Q, R, x_nominal, u_nom, x_final, Q_final));
+        new CostFunctionQuadraticSimpleWaypoints<ManifoldState_t, control_dim>(
+            Q, R, target_poses, u_nom, x_final, Q_final, dt * N));
 
 
     // integrate an initial state with the open-loop system to get initial trajectories
@@ -410,7 +477,7 @@ int main(int argc, char** argv)
     ManifoldState_t::Tangent dx;
     x_curr = x0;
     x_traj.front() = x0;
-    std::cout << "integrate an random initial state with the unstable system" << std::endl;
+
     //std::cout << std::setprecision(4) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     for (size_t i = 0; i < N; i++)
     {
@@ -424,23 +491,27 @@ int main(int argc, char** argv)
         //std::cout << std::setprecision(10) << "m: " << x_curr << "\t tan: " << x_curr.log() << std::endl;
     }
 
-    size_t nIter = 25;
+    size_t nIter = 15;
     for (size_t iter = 0; iter < nIter; iter++)
     {
         // initialize the LQ optimal control problem
-        problem->setFromTimeInvariantLinearQuadraticProblem(x_traj, u_traj, *linearizer, *costFunction, b, dt);
+        problem->setFromTimeInvariantLinearQuadraticProblem(x_traj, u_traj, *linearSystem, *costFunction, b, dt);
 
         // dynamics transportation for backwards riccati pass and forward solution candidate update
         for (size_t i = 0; i < N; i++)
         {
-            auto l = x_traj[i + 1].rminus(x_traj[i]);
-            auto l_adj = (l.exp()).adj();
-            problem->Adj_x_[i + 1] = l_adj;  // parallel transport matrix / adjoint from stage k+1 to stage k
+            Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
+            auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);
+
+            auto m = Jl.transpose();  // transport matrix / adjoint from stage k+1 to stage k
+            problem->Adj_x_[i + 1] =
+                m.inverse();  // TODO: could we find a different expression, e.g. something like -Jr?
+
 
             // make the necessary overloads, which allows the standard riccati gnSolver to backpropagate on manifolds
-            problem->A_[i] = l_adj.transpose() * problem->A_[i];
-            problem->B_[i] = l_adj.transpose() * problem->B_[i];
-            problem->b_[i] = l_adj.transpose() * problem->b_[i];
+            problem->A_[i] = m * problem->A_[i];
+            problem->B_[i] = m * problem->B_[i];
+            problem->b_[i] = m * problem->b_[i];
         }
 
         // set the problem pointers
@@ -469,7 +540,7 @@ int main(int argc, char** argv)
         auto xSol_gn = gnSolver->getSolutionState();
         auto uSol_gn = gnSolver->getSolutionControl();
         ct::core::FeedbackArray<state_dim, control_dim> KSol_gn = gnSolver->getSolutionFeedback();
-        ct::core::ControlVectorArray<control_dim> lv_sol_gn = gnSolver->get_lv();
+        ct::core::ControlVectorArray<double> lv_sol_gn = gnSolver->get_lv();
 
         // auto xSol_hpipm = hpipmSolver->getSolutionState();
         // auto uSol_hpipm = hpipmSolver->getSolutionControl();
@@ -491,8 +562,8 @@ int main(int argc, char** argv)
             {
                 ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i]);
                 u_traj[i] += lv_sol_gn[i] + KSol_gn[i] * x_err;
-                exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
-                x_traj[i + 1] = x_traj[i] + dx;
+                exampleSystem->computeControlledDynamics(x_traj[i], i, u_traj[i], dx);
+                x_traj[i + 1] = x_traj[i].rplus(dx);
             }
             else  // multiple shooting
             {
@@ -520,5 +591,21 @@ int main(int argc, char** argv)
         std::cout << std::setprecision(10) << "d_norm: \t " << d_cum_sum << "\t dx_norm: \t" << dx_cum_sum
                   << " \t Jcost: " << cost_sum << std::endl;
     }  // end iter
-    return 1;
+
+    // save the x-trajectory to file
+    std::vector<Eigen::Matrix3d> rot_traj;
+    for (size_t i = 0; i < x_traj.size(); i++)
+    {
+        std::cout << x_traj[i] << std::endl;
+
+        rot_traj.push_back(x_traj[i].pos().rotation());
+    }
+    EigenFileExport::mat_to_file(EigenFileExport::CSVFormat(), "/tmp/rot_traj_dynamic.csv", rot_traj);
+
+    for (size_t i = 0; i < u_traj.size(); i++)
+    {
+        std::cout << u_traj[i].transpose() << std::endl;
+    }
+
+    return 0;
 }

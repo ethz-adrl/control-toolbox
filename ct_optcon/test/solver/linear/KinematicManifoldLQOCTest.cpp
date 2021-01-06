@@ -254,8 +254,7 @@ void ocqpTest()
             {
                 Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
                 auto l = x_traj[i + 1].rminus(x_traj[i], Jl, Jr);
-                // auto l_adj = (l.exp()).adj();
-                auto between_adj = x_traj[i + 1].between(x_traj[i]).adj();
+                //auto between_adj = x_traj[i + 1].between(x_traj[i]).adj();
 
                 auto m = Jl.transpose();  // transport matrix / adjoint from stage k+1 to stage k
                 problems[idx]->Adj_x_[i + 1] =
@@ -361,9 +360,8 @@ void ocqpTest()
 
             if (use_single_shooting)
             {
-                Eigen::Matrix<double, state_dim, state_dim> Jl, Jr;
-                ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i], Jl, Jr);
-                const double alpha = 0.75;
+                ManifoldState_t::Tangent x_err = x_traj[i].rminus(x_traj_prev[i]);
+                const double alpha = 0.75; // TODO: remove this
                 u_traj[i] += alpha * (lv_sol_riccati[i] + KSol_riccati[i] * (x_err /*- eucl. part here*/));
                 exampleSystem->computeControlledDynamics(x_traj[i], i * dt, u_traj[i], dx);
                 x_traj[i + 1] = x_traj[i] + dx;
