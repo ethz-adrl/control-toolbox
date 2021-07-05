@@ -235,9 +235,6 @@ To get started with the control toolbox, please build the repository documentati
  - Ruben Grandia
  - Hamza Merzic
  
-### Maintenance
- - Markus Giftthaler, markusgft (at) gmail (dot) com
-
 
 ### Funding
 This software has been developed at the <a href="http://www.adrl.ethz.ch" target="_blank">Agile & Dexterous Robotics Lab</a> 
