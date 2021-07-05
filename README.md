@@ -2,6 +2,11 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ethz-adrl/control-toolbox.svg?style=social)
 ![GitHub](https://img.shields.io/github/license/ethz-adrl/control-toolbox.svg?style=social)
 
+```diff
+- Important note (July 2021): this library is currently only scarcely maintained,
+- it may take a while until we respond to bugs or feature requests.
+```
+
 This is the Control Toolbox, an efficient C++ library for control, estimation, optimization and motion planning in robotics.
 
 Link to the wiki, [quickstart!](https://github.com/ethz-adrl/control-toolbox/wiki/Quickstart) \
