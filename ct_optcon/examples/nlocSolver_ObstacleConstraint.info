@@ -37,5 +37,6 @@ ilqr
     {
         lqoc_debug_print        false
         num_lqoc_iterations  	50
+        hpipm_mode_str          SPEED
     }
 }

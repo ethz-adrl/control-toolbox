@@ -24,9 +24,9 @@ struct LineSearchSettings
     //! types of backtracking line-search
     enum TYPE
     {
-        NONE = 0,      //! take full-step updates
-        SIMPLE,        //! simple backtracking using cost or merit function
-        ARMIJO,        //! backtracking including riccati matrix measure
+        NONE = 0,   //! take full-step updates
+        SIMPLE,     //! simple backtracking using cost or merit function
+        ARMIJO,     //! backtracking including riccati matrix measure
         GOLDSTEIN,  //! backtracking including riccati matrix measure and defects
         NUM_TYPES
     };
@@ -154,16 +154,20 @@ struct LineSearchSettings
 struct LQOCSolverSettings
 {
 public:
-    LQOCSolverSettings() : lqoc_debug_print(false), num_lqoc_iterations(10) {}
+    LQOCSolverSettings() : lqoc_debug_print(false), num_lqoc_iterations(10), hpipm_mode_str("SPEED") {}
 
     bool lqoc_debug_print;
-    int num_lqoc_iterations;  //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
+    int num_lqoc_iterations;     //! number of allowed sub-iterations of LQOC solver per NLOC main iteration
+    std::string hpipm_mode_str;  // HPIPM specific : SPEED_ABS, SPEED, ROBUST or BALANCED.
+    // Stored as string and not as hpipm_mode enum because HPIPM is not a compulsory dependency.
+    //(see https://github.com/giaf/hpipm/blob/f38a216c5a9f916682cd543f8992a594323ad202/ocp_qp/x_ocp_qp_ipm.c#L69)
 
     void print() const
     {
         std::cout << "======================= LQOCSolverSettings =====================" << std::endl;
         std::cout << "num_lqoc_iterations: \t" << num_lqoc_iterations << std::endl;
         std::cout << "lqoc_debug_print: \t" << lqoc_debug_print << std::endl;
+        std::cout << "hpipm_mode_str: \t" << hpipm_mode_str << std::endl;
     }
 
     void load(const std::string& filename, bool verbose = true, const std::string& ns = "lqoc_solver_settings")
@@ -183,6 +187,12 @@ public:
         try
         {
             lqoc_debug_print = pt.get<bool>(ns + ".lqoc_debug_print");
+        } catch (...)
+        {
+        }
+        try
+        {
+            hpipm_mode_str = pt.get<std::string>(ns + ".hpipm_mode_str");
         } catch (...)
         {
         }

@@ -139,6 +139,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
     ipm_arg_mem_ = malloc(ipm_arg_size);
     ::d_ocp_qp_ipm_arg_create(&dim_, &arg_, ipm_arg_mem_);
 
+    if (stringToHpipmMode.find(settings_.lqoc_solver_settings.hpipm_mode_str) != stringToHpipmMode.end())
+        mode_ = stringToHpipmMode[settings_.lqoc_solver_settings.hpipm_mode_str];
+    else
+    {
+        std::cout << "Invalid hpipm_mode_str specified in config, should be one of the following:" << std::endl;
+        for (auto it = stringToHpipmMode.begin(); it != stringToHpipmMode.end(); it++)
+            std::cout << it->first << std::endl;
+        exit(-1);
+    }
+
     ::d_ocp_qp_ipm_arg_set_default(mode_, &arg_);
     ::d_ocp_qp_ipm_arg_set_iter_max(&settings_.lqoc_solver_settings.num_lqoc_iterations, &arg_);
 

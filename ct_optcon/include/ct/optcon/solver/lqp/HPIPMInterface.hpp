@@ -255,8 +255,11 @@ private:
     struct d_ocp_qp_ipm_ws workspace_;
     int hpipm_status_;  // status code after solving
 
-    // todo make this a setting
-    ::hpipm_mode mode_ = ::hpipm_mode::SPEED;  // ROBUST/BALANCED; see also hpipm_common.h
+    // hpipm mode SPEED_ABS, SPEED, ROBUST or BALANCED
+    ::hpipm_mode mode_;  // see also hpipm_common.h
+
+    std::map<std::string, ::hpipm_mode> stringToHpipmMode = {{"SPEED_ABS", ::hpipm_mode::SPEED_ABS},
+        {"SPEED", ::hpipm_mode::SPEED}, {"ROBUST", ::hpipm_mode::ROBUST}, {"BALANCE", ::hpipm_mode::BALANCE}};
 };
 
 }  // namespace optcon
